@@ -3,7 +3,7 @@ import { deleteMenuItem, updateMenuItem } from "@/lib/data-store";
 import { requireAdminSession } from "@/lib/auth";
 import { MenuCategory } from "@/lib/types";
 
-const allowedCategories = new Set<MenuCategory>(["Masculino", "Feminino", "Unissex", "Colecoes"]);
+const allowedCategories = new Set<MenuCategory>(["Masculino", "Feminino", "Unissex", "Kits"]);
 
 type Context = {
   params: {
@@ -23,6 +23,7 @@ export async function PUT(request: Request, context: Context) {
     description?: string;
     price?: number;
     image?: string;
+    images?: string[];
     category?: MenuCategory;
     featured?: boolean;
     available?: boolean;
@@ -32,7 +33,25 @@ export async function PUT(request: Request, context: Context) {
     return NextResponse.json({ error: "Categoria invalida" }, { status: 400 });
   }
 
-  const updated = await updateMenuItem(context.params.id, body);
+  const sanitizedImages = Array.isArray(body.images)
+    ? body.images.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    : undefined;
+
+  const updates = { ...body } as typeof body;
+  if (sanitizedImages) {
+    updates.images = sanitizedImages;
+    updates.image = body.image ?? sanitizedImages[0];
+  } else {
+    delete updates.images;
+  }
+
+  if (!updates.image) {
+    delete updates.image;
+  }
+
+  const updated = await updateMenuItem(context.params.id, {
+    ...updates
+  });
 
   if (!updated) {
     return NextResponse.json({ error: "Item nao encontrado" }, { status: 404 });

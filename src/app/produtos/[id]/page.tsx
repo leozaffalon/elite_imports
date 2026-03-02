@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { getMenuItems } from "@/lib/data-store";
 import ProductDetail from "@/components/product-detail";
 
@@ -20,11 +19,10 @@ export default async function ProdutoPage({ params }: Props) {
 
   return (
     <main className="container page-flow product-page">
-      <div className="topbar-spacer" />
       <nav className="breadcrumb">
-        <Link href="/">Home</Link>
+        <Link href="/">Inicio</Link>
         <span>/</span>
-        <Link href="/#cardapio">Catálogo</Link>
+        <Link href="/#catalogo">Catalogo</Link>
         <span>/</span>
         <strong>{product.name}</strong>
       </nav>

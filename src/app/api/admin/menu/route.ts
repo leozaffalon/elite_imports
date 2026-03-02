@@ -3,7 +3,7 @@ import { addMenuItem, getMenuItems } from "@/lib/data-store";
 import { requireAdminSession } from "@/lib/auth";
 import { MenuCategory } from "@/lib/types";
 
-const allowedCategories = new Set<MenuCategory>(["Masculino", "Feminino", "Unissex", "Colecoes"]);
+const allowedCategories = new Set<MenuCategory>(["Masculino", "Feminino", "Unissex", "Kits"]);
 
 export async function GET() {
   const session = await requireAdminSession();
@@ -28,12 +28,18 @@ export async function POST(request: Request) {
     description?: string;
     price?: number;
     image?: string;
+    images?: string[];
     category?: MenuCategory;
     featured?: boolean;
     available?: boolean;
   };
 
-  if (!body.name || !body.description || typeof body.price !== "number" || !body.image) {
+  const sanitizedImages = Array.isArray(body.images)
+    ? body.images.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    : [];
+  const primaryImage = body.image || sanitizedImages[0];
+
+  if (!body.name || !body.description || typeof body.price !== "number" || !primaryImage) {
     return NextResponse.json({ error: "Dados obrigatorios ausentes" }, { status: 400 });
   }
 
@@ -45,7 +51,8 @@ export async function POST(request: Request) {
     name: body.name,
     description: body.description,
     price: body.price,
-    image: body.image,
+    image: primaryImage,
+    images: sanitizedImages.length > 0 ? sanitizedImages : [primaryImage],
     category: body.category,
     featured: Boolean(body.featured),
     available: body.available ?? true

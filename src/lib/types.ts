@@ -1,4 +1,4 @@
-export type MenuCategory = "Masculino" | "Feminino" | "Unissex" | "Colecoes";
+export type MenuCategory = "Masculino" | "Feminino" | "Unissex" | "Kits";
 
 export type MenuItem = {
   id: string;
@@ -6,6 +6,7 @@ export type MenuItem = {
   description: string;
   price: number;
   image: string;
+  images: string[];
   category: MenuCategory;
   featured: boolean;
   available: boolean;
@@ -31,5 +32,5 @@ export type Order = {
   items: CartItem[];
   customer: CustomerData;
   total: number;
-  status: "Recebido" | "Separando" | "Em transporte" | "Entregue";
+  status: "Recebido" | "Em preparo" | "Enviado" | "Entregue";
 };

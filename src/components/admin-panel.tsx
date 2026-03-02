@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { MenuCategory, MenuItem } from "@/lib/types";
 
 type MenuInput = {
@@ -9,18 +10,21 @@ type MenuInput = {
   description: string;
   price: number;
   image: string;
+  images: string[];
   category: MenuCategory;
   featured: boolean;
   available: boolean;
 };
 
-const categories: MenuCategory[] = ["Masculino", "Feminino", "Unissex", "Colecoes"];
+const categories: MenuCategory[] = ["Masculino", "Feminino", "Unissex", "Kits"];
+const adminCurrency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 const emptyItem: MenuInput = {
   name: "",
   description: "",
   price: 0,
-  image: "/images/hero-perfume.svg",
+  image: "/images/official/hero.png",
+  images: [],
   category: "Masculino",
   featured: false,
   available: true
@@ -72,7 +76,7 @@ export default function AdminPanel() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username: username.trim(), password: password.trim() })
       });
 
       const payload = (await response.json()) as { error?: string };
@@ -99,32 +103,7 @@ export default function AdminPanel() {
     setMessage("Sessao encerrada.");
   }
 
-  async function handleCreate(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage("");
-
-    const response = await fetch("/api/admin/menu", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(newItem)
-    });
-
-    const payload = (await response.json()) as { error?: string };
-
-    if (!response.ok) {
-      setMessage(payload.error ?? "Nao foi possivel criar o item.");
-      return;
-    }
-
-    setNewItem(emptyItem);
-    setMessage("Item adicionado no catalogo.");
-    await refreshMenu();
-  }
-
-  async function handleUpload(file: File, onDone: (url: string) => void) {
-    setUploadStatus("Enviando imagem...");
+  async function uploadSingleImage(file: File) {
     const data = new FormData();
     data.append("file", file);
     const response = await fetch("/api/upload", {
@@ -135,31 +114,85 @@ export default function AdminPanel() {
     const payload = (await response.json()) as { url?: string; error?: string };
 
     if (!response.ok || !payload.url) {
-      setUploadStatus(payload.error ?? "Falha no upload. Tente outra imagem.");
-      return;
+      throw new Error(payload.error ?? "Falha no upload.");
     }
 
-    onDone(payload.url);
-    setUploadStatus("Imagem enviada.");
+    return payload.url;
   }
 
-  function onDrop(files: FileList, setValue: (url: string) => void) {
-    const [file] = Array.from(files);
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setUploadStatus("Envie apenas imagens.");
+  async function uploadMany(files: FileList | File[]) {
+    const list = Array.from(files);
+    if (list.length === 0) {
+      return [];
+    }
+
+    for (const file of list) {
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Envie apenas arquivos de imagem.");
+      }
+    }
+
+    setUploadStatus(`Enviando ${list.length} imagem(ns)...`);
+    const urls: string[] = [];
+
+    for (const file of list) {
+      const url = await uploadSingleImage(file);
+      urls.push(url);
+    }
+
+    setUploadStatus(`${urls.length} imagem(ns) enviada(s).`);
+    return urls;
+  }
+
+  function appendImages(urls: string[], setValue: (images: string[]) => void) {
+    if (urls.length === 0) {
       return;
     }
-    void handleUpload(file, setValue);
+
+    setValue(urls);
+  }
+
+  async function handleCreate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+
+    const images = newItem.images.length > 0 ? newItem.images : [newItem.image];
+    const payload = {
+      ...newItem,
+      image: images[0],
+      images
+    };
+
+    const response = await fetch("/api/admin/menu", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = (await response.json()) as { error?: string };
+
+    if (!response.ok) {
+      setMessage(data.error ?? "Nao foi possivel criar o item.");
+      return;
+    }
+
+    setNewItem(emptyItem);
+    setUploadStatus("");
+    setMessage("Item adicionado no catalogo.");
+    await refreshMenu();
   }
 
   function startEditing(item: MenuItem) {
+    const existingImages = item.images?.length ? item.images : [item.image];
     setEditingId(item.id);
     setEditingDraft({
       name: item.name,
       description: item.description,
       price: item.price,
-      image: item.image,
+      image: existingImages[0] ?? item.image,
+      images: existingImages,
       category: item.category,
       featured: item.featured,
       available: item.available
@@ -167,12 +200,17 @@ export default function AdminPanel() {
   }
 
   async function saveEdit(id: string) {
+    const images = editingDraft.images.length > 0 ? editingDraft.images : [editingDraft.image];
     const response = await fetch(`/api/admin/menu/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(editingDraft)
+      body: JSON.stringify({
+        ...editingDraft,
+        image: images[0],
+        images
+      })
     });
 
     const payload = (await response.json()) as { error?: string };
@@ -208,7 +246,7 @@ export default function AdminPanel() {
       <main className="admin-shell">
         <section className="admin-login-card reveal-up">
           <h1>Admin | Elite Aromas</h1>
-          <p>Entre com as credenciais do arquivo .env.local</p>
+          <p>Entre com as credenciais definidas no arquivo .env.local</p>
 
           <form onSubmit={handleLogin}>
             <label>
@@ -269,7 +307,7 @@ export default function AdminPanel() {
 
       <section className="admin-grid">
         <article className="admin-card reveal-up">
-          <h2>Novo item</h2>
+          <h2>Novo perfume</h2>
           <form className="admin-form" onSubmit={handleCreate}>
             <label>
               Nome
@@ -282,7 +320,7 @@ export default function AdminPanel() {
             </label>
 
             <label>
-              Descricao (como será exibida na vitrine)
+              Descricao
               <textarea
                 onChange={(event) =>
                   setNewItem((prev) => ({ ...prev, description: event.target.value }))
@@ -308,39 +346,84 @@ export default function AdminPanel() {
             </label>
 
             <label>
-              Imagem (arraste ou clique)
+              Imagens do produto (arraste uma ou mais)
               <div
                 className="dropzone"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  onDrop(e.dataTransfer.files, (url) =>
-                    setNewItem((prev) => ({
-                      ...prev,
-                      image: url
-                    }))
-                  );
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  void uploadMany(event.dataTransfer.files)
+                    .then((urls) =>
+                      appendImages(urls, (incomingImages) =>
+                        setNewItem((prev) => {
+                          const images = [...new Set([...prev.images, ...incomingImages])];
+                          return {
+                            ...prev,
+                            images,
+                            image: images[0] ?? prev.image
+                          };
+                        })
+                      )
+                    )
+                    .catch((error: Error) => setUploadStatus(error.message));
                 }}
               >
                 <input
                   accept="image/*"
+                  multiple
                   type="file"
                   onChange={(event) => {
                     const files = event.target.files;
-                    if (files) {
-                      onDrop(files, (url) =>
-                        setNewItem((prev) => ({
-                          ...prev,
-                          image: url
-                        }))
-                      );
-                    }
+                    if (!files) return;
+
+                    void uploadMany(files)
+                      .then((urls) =>
+                        appendImages(urls, (incomingImages) =>
+                          setNewItem((prev) => {
+                            const images = [...new Set([...prev.images, ...incomingImages])];
+                            return {
+                              ...prev,
+                              images,
+                              image: images[0] ?? prev.image
+                            };
+                          })
+                        )
+                      )
+                      .catch((error: Error) => setUploadStatus(error.message));
                   }}
                 />
-                <p>Solte a imagem aqui ou clique para selecionar</p>
-                <span className="muted">{newItem.image || "Nenhuma imagem enviada"}</span>
+                <p>Solte aqui os arquivos ou clique para selecionar</p>
+                <span className="muted">A primeira imagem da lista vira a capa do produto.</span>
               </div>
             </label>
+
+            {newItem.images.length > 0 && (
+              <div className="image-list">
+                {newItem.images.map((image, index) => (
+                  <div className="image-list-item" key={`${image}-${index}`}>
+                    <Image alt={`Imagem ${index + 1}`} height={72} src={image} width={72} />
+                    <span>{index === 0 ? "Capa" : `Imagem ${index + 1}`}</span>
+                    <button
+                      onClick={() =>
+                        setNewItem((prev) => {
+                          const nextImages = prev.images.filter(
+                            (_, imageIndex) => imageIndex !== index
+                          );
+                          return {
+                            ...prev,
+                            images: nextImages,
+                            image: nextImages[0] ?? "/images/official/hero.png"
+                          };
+                        })
+                      }
+                      type="button"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <label>
               Categoria
@@ -366,7 +449,7 @@ export default function AdminPanel() {
                 }
                 type="checkbox"
               />
-              Destacar como amostra/vitrine
+              Mostrar na vitrine
             </label>
 
             <label className="check-row">
@@ -440,29 +523,81 @@ export default function AdminPanel() {
                       </div>
                       <div
                         className="dropzone"
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          onDrop(e.dataTransfer.files, (url) =>
-                            setEditingDraft((prev) => ({ ...prev, image: url }))
-                          );
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={(event) => {
+                          event.preventDefault();
+                          void uploadMany(event.dataTransfer.files)
+                            .then((urls) =>
+                              appendImages(urls, (incomingImages) =>
+                                setEditingDraft((prev) => {
+                                  const images = [...new Set([...prev.images, ...incomingImages])];
+                                  return {
+                                    ...prev,
+                                    images,
+                                    image: images[0] ?? prev.image
+                                  };
+                                })
+                              )
+                            )
+                            .catch((error: Error) => setUploadStatus(error.message));
                         }}
                       >
                         <input
                           accept="image/*"
+                          multiple
                           type="file"
                           onChange={(event) => {
                             const files = event.target.files;
-                            if (files) {
-                              onDrop(files, (url) =>
-                                setEditingDraft((prev) => ({ ...prev, image: url }))
-                              );
-                            }
+                            if (!files) return;
+
+                            void uploadMany(files)
+                              .then((urls) =>
+                                appendImages(urls, (incomingImages) =>
+                                  setEditingDraft((prev) => {
+                                    const images = [...new Set([...prev.images, ...incomingImages])];
+                                    return {
+                                      ...prev,
+                                      images,
+                                      image: images[0] ?? prev.image
+                                    };
+                                  })
+                                )
+                              )
+                              .catch((error: Error) => setUploadStatus(error.message));
                           }}
                         />
-                        <p>Arraste nova imagem ou clique</p>
-                        <span className="muted">{editingDraft.image}</span>
+                        <p>Adicione mais imagens</p>
+                        <span className="muted">A primeira imagem da lista sera usada na vitrine.</span>
                       </div>
+
+                      {editingDraft.images.length > 0 && (
+                        <div className="image-list">
+                          {editingDraft.images.map((image, index) => (
+                            <div className="image-list-item" key={`${image}-${index}`}>
+                              <Image alt={`Imagem ${index + 1}`} height={72} src={image} width={72} />
+                              <span>{index === 0 ? "Capa" : `Imagem ${index + 1}`}</span>
+                              <button
+                                onClick={() =>
+                                  setEditingDraft((prev) => {
+                                    const nextImages = prev.images.filter(
+                                      (_, imageIndex) => imageIndex !== index
+                                    );
+                                    return {
+                                      ...prev,
+                                      images: nextImages,
+                                      image: nextImages[0] ?? "/images/official/hero.png"
+                                    };
+                                  })
+                                }
+                                type="button"
+                              >
+                                Remover
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <div className="admin-inline-grid">
                         <label className="check-row">
                           <input
@@ -502,7 +637,7 @@ export default function AdminPanel() {
                         <p>{item.description}</p>
                       </div>
                       <div className="admin-inline-grid compact">
-                        <span>R$ {item.price.toFixed(2)}</span>
+                        <span>{adminCurrency.format(item.price)}</span>
                         <span>{item.category}</span>
                         <span>{item.featured ? "Destaque" : "Padrao"}</span>
                         <span>{item.available ? "Disponivel" : "Indisponivel"}</span>

@@ -16,7 +16,7 @@ const bodyFont = Manrope({
 export const metadata: Metadata = {
   title: "Elite Aromas | Perfumes Importados Originais",
   description:
-    "Loja online Elite Aromas: catálogo curado de perfumes importados com atendimento direto no WhatsApp e painel admin."
+    "Elite Aromas: perfumes importados originais, curadoria premium e atendimento oficial via WhatsApp."
 };
 
 export default function RootLayout({

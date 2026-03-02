@@ -23,7 +23,14 @@ type ShopPageProps = {
   initialMenu: MenuItem[];
 };
 
-const categories: Array<"Todos" | MenuCategory> = ["Todos", "Masculino", "Feminino", "Unissex", "Colecoes"];
+const categories: Array<"Todos" | MenuCategory> = ["Todos", "Masculino", "Feminino", "Unissex", "Kits"];
+
+const trustPills = [
+  "Perfumes importados e originais",
+  "Lote e autenticidade verificados",
+  "Atendimento humano via WhatsApp",
+  "Entrega nacional com suporte"
+];
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -59,6 +66,7 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
 
   function addToCart(item: MenuItem) {
     setFeedback("");
+
     setCart((prev) => {
       const exists = prev.find((cartItem) => cartItem.id === item.id);
 
@@ -73,44 +81,51 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
   }
 
   function changeQuantity(id: string, delta: number) {
-    setCart((prev) => {
-      const updated = prev
+    setCart((prev) =>
+      prev
         .map((item) => (item.id === id ? { ...item, quantity: item.quantity + delta } : item))
-        .filter((item) => item.quantity > 0);
-
-      return updated;
-    });
+        .filter((item) => item.quantity > 0)
+    );
   }
 
-  async function handleCheckout(event: FormEvent<HTMLFormElement>) {
+  function handleCheckout(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (cart.length === 0) {
-      setFeedback("Adicione pelo menos um item no carrinho.");
+      setFeedback("Adicione pelo menos um perfume ao carrinho.");
       return;
     }
 
-    const itensMensagem = cart
-      .map((item) => `${item.name} | qtd ${item.quantity} | ${currency.format(item.price)}`)
-      .join("\\n");
+    if (!customer.name || !customer.phone || !customer.address) {
+      setFeedback("Preencha nome, telefone e endereco para continuar.");
+      return;
+    }
 
-    const mensagem = [
-      "Ola, quero comprar os perfumes abaixo na Elite Aromas:",
+    const orderLines = cart
+      .map(
+        (item, index) =>
+          `${index + 1}. Produto: ${item.name}\nQuantidade: ${item.quantity}\nValor unitario: ${currency.format(
+            item.price
+          )}`
+      )
+      .join("\n\n");
+
+    const message = [
+      "Ola, gostaria de adquirir os perfumes abaixo:",
       "",
-      itensMensagem,
+      orderLines,
       "",
       `Total estimado: ${currency.format(subtotal)}`,
       "",
-      "Dados para entrega:",
+      "Dados para atendimento:",
       `Nome: ${customer.name}`,
       `Telefone: ${customer.phone}`,
       `Endereco: ${customer.address}`,
       `Observacoes: ${customer.notes || "Nenhuma"}`
-    ].join("\\n");
+    ].join("\n");
 
-    const url = `https://wa.me/5519992572980?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-    setFeedback("Abrimos o WhatsApp com seu pedido. Complete o envio por lá.");
+    window.open(`https://wa.me/5519992572980?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    setFeedback("WhatsApp aberto com a sua solicitacao preenchida.");
   }
 
   return (
@@ -120,10 +135,13 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
       <div className="bg-orb orb-3" />
 
       <header className="topbar container">
-        <div className="brand">Elite Aromas</div>
+        <div className="brand">
+          <span className="brand-mark">EA</span>
+          <span>Elite Aromas</span>
+        </div>
         <nav className="nav-links">
-          <a href="#cardapio">Catálogo</a>
-          <a href="#pedido">Carrinho</a>
+          <a href="#catalogo">Catalogo</a>
+          <a href="#compra">Comprar</a>
           <Link href="/admin">Admin</Link>
         </nav>
       </header>
@@ -131,35 +149,46 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
       <main className="container page-flow">
         <section className="hero">
           <div className="hero-copy reveal-up">
-            <p className="kicker">Perfumes importados originais</p>
-            <h1>Luxo internacional ao alcance.</h1>
+            <p className="kicker">Perfumaria de importados</p>
+            <h1>Fragrancias de grife com curadoria premium.</h1>
             <p>
-              Curadoria premium com clássicos e lançamentos. Atendimento direto pelo WhatsApp para
-              fechar seu pedido com agilidade e segurança.
+              Inspirada na direcao artistica editorial de grandes maisons, a Elite Aromas entrega um
+              catalogo com autenticidade, suporte consultivo e atendimento direto.
             </p>
-            <button
-              className="primary-btn"
-              onClick={() => document.getElementById("cardapio")?.scrollIntoView({ behavior: "smooth" })}
-              type="button"
-            >
-              Ver catálogo
-            </button>
+            <div className="hero-actions">
+              <button
+                className="primary-btn"
+                onClick={() => document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" })}
+                type="button"
+              >
+                Explorar perfumes
+              </button>
+            </div>
           </div>
+
           <div className="hero-image reveal-up">
             <Image
-              src="/images/hero-perfume.svg"
-              alt="Perfume sobre fundo azul, representando Elite Aromas"
-              width={560}
-              height={450}
+              src="/images/official/hero.png"
+              alt="Colecao de perfumes importados Elite Aromas"
+              width={900}
+              height={620}
               priority
             />
           </div>
         </section>
 
+        <section className="trust-strip reveal-up">
+          {trustPills.map((pill) => (
+            <div className="trust-pill" key={pill}>
+              {pill}
+            </div>
+          ))}
+        </section>
+
         <section className="feature-panels">
           {featured.map((item) => (
             <article className="feature-card reveal-up" key={item.id}>
-              <span className="feature-tag">Edição importada</span>
+              <span className="feature-tag">Selecao em destaque</span>
               <h3>{item.name}</h3>
               <p>{item.description}</p>
               <strong>{currency.format(item.price)}</strong>
@@ -167,9 +196,10 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
           ))}
         </section>
 
-        <section className="menu-section" id="cardapio">
+        <section className="menu-section" id="catalogo">
           <div className="menu-header">
-            <h2>Catálogo curado</h2>
+            <h2>Catalogo oficial</h2>
+            <p className="muted-text">Clique no produto para abrir a pagina completa com galeria e detalhes.</p>
             <div className="category-tabs">
               {categories.map((category) => (
                 <button
@@ -189,7 +219,7 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
               <article className="menu-card reveal-up" key={item.id}>
                 <Link className="card-link" href={`/produtos/${item.id}`}>
                   <div className="card-image-wrap">
-                    <Image src={item.image} alt={item.name} width={400} height={240} />
+                    <Image src={item.image} alt={item.name} width={580} height={420} />
                   </div>
                   <div className="card-content">
                     <div>
@@ -198,10 +228,11 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
                     </div>
                     <div className="card-footer">
                       <strong>{currency.format(item.price)}</strong>
-                      <span className="muted-text">Ver detalhes</span>
+                      <span className="muted-text">Abrir pagina do produto</span>
                     </div>
                   </div>
                 </Link>
+
                 <div className="card-actions">
                   <button
                     className="secondary-btn"
@@ -217,7 +248,7 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
           </div>
         </section>
 
-        <section className="order-section" id="pedido">
+        <section className="order-section" id="compra">
           <div className="order-panel reveal-up">
             <h2>Carrinho</h2>
             {cart.length === 0 && <p>Seu carrinho esta vazio.</p>}
@@ -225,7 +256,7 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
               <div className="cart-row" key={item.id}>
                 <div>
                   <strong>{item.name}</strong>
-                  <p>{currency.format(item.price)} cada</p>
+                  <p>{currency.format(item.price)} por unidade</p>
                 </div>
                 <div className="qty-controls">
                   <button onClick={() => changeQuantity(item.id, -1)} type="button">
@@ -242,15 +273,13 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
               <span>Total estimado</span>
               <strong>{currency.format(subtotal)}</strong>
             </div>
-            <p className="muted-text">
-              Atendimento direto no WhatsApp. Enviamos nota fiscal e combinamos frete com você.
-            </p>
+            <p className="muted-text">A finalizacao do pedido acontece via atendimento oficial no WhatsApp.</p>
           </div>
 
           <form className="checkout-panel reveal-up" onSubmit={handleCheckout}>
-            <h2>Concluir pelo WhatsApp</h2>
+            <h2>Enviar solicitacao</h2>
             <label>
-              Nome
+              Nome completo
               <input
                 onChange={(event) => setCustomer((prev) => ({ ...prev, name: event.target.value }))}
                 required
@@ -258,6 +287,7 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
                 value={customer.name}
               />
             </label>
+
             <label>
               Telefone
               <input
@@ -267,6 +297,7 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
                 value={customer.phone}
               />
             </label>
+
             <label>
               Endereco de entrega
               <input
@@ -276,6 +307,7 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
                 value={customer.address}
               />
             </label>
+
             <label>
               Observacoes
               <textarea
@@ -286,7 +318,7 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
             </label>
 
             <button className="primary-btn" type="submit">
-              Abrir WhatsApp
+              Enviar para WhatsApp
             </button>
 
             {feedback && <p className="feedback-text">{feedback}</p>}

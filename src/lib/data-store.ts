@@ -9,86 +9,144 @@ const ordersPath = path.join(dataDir, "orders.json");
 
 const initialMenu: MenuItem[] = [
   {
-    id: "dodo-1",
+    id: "elite-1",
     name: "Sauvage Elixir (Dior)",
-    description: "Lavanda apimentada, madeiras secas e acorde amber para presença marcante.",
+    description: "Notas de canela, lavanda e acorde amadeirado intenso com assinatura sofisticada.",
     price: 899,
-    image: "/images/sauvage.svg",
+    image: "/images/official/sauvage.png",
+    images: ["/images/official/sauvage.png"],
     category: "Masculino",
     featured: true,
     available: true
   },
   {
-    id: "dodo-2",
-    name: "Bleu de Chanel", 
-    description: "Citrus fresco com incenso e cedro, assinatura versatil para o dia todo.",
+    id: "elite-2",
+    name: "Bleu de Chanel",
+    description: "Cítrico amadeirado elegante, com incenso e cedro para uso diário e noturno.",
     price: 829,
-    image: "/images/bleu.svg",
+    image: "/images/official/bleu.png",
+    images: ["/images/official/bleu.png"],
     category: "Masculino",
     featured: true,
     available: true
   },
   {
-    id: "dodo-3",
-    name: "La Vie Est Belle", 
-    description: "Iris gourmand com baunilha e praliné, feminino e luminosa.",
+    id: "elite-3",
+    name: "La Vie Est Belle",
+    description: "Perfume floral gourmand com íris, baunilha e pralinê de alta fixação.",
     price: 749,
-    image: "/images/lavie.svg",
+    image: "/images/official/lavie.png",
+    images: ["/images/official/lavie.png"],
     category: "Feminino",
     featured: true,
     available: true
   },
   {
-    id: "dodo-4",
-    name: "Good Girl", 
-    description: "Jasmim, tuberosa e fava tonka para um floral oriental marcante.",
+    id: "elite-4",
+    name: "Good Girl",
+    description: "Floral oriental com jasmim e fava tonka, marcante e glamouroso.",
     price: 699,
-    image: "/images/goodgirl.svg",
+    image: "/images/official/goodgirl.png",
+    images: ["/images/official/goodgirl.png"],
     category: "Feminino",
     featured: false,
     available: true
   },
   {
-    id: "dodo-5",
-    name: "Light Blue", 
-    description: "Limão siciliano, maçã verde e almíscar limpo lembrando brisa mediterrânea.",
+    id: "elite-5",
+    name: "Light Blue",
+    description: "Fresco e cítrico, com limão siciliano e maçã verde em perfil mediterrâneo.",
     price: 589,
-    image: "/images/lightblue.svg",
+    image: "/images/official/lightblue.png",
+    images: ["/images/official/lightblue.png"],
     category: "Unissex",
     featured: false,
     available: true
   },
   {
-    id: "dodo-6",
-    name: "Oud Wood", 
-    description: "Oud aveludado com cardamomo e baunilha, assinatura niche para noites.",
+    id: "elite-6",
+    name: "Oud Wood",
+    description: "Blend de oud com cardamomo e baunilha seca, sofisticado e exclusivo.",
     price: 1190,
-    image: "/images/oudwood.svg",
+    image: "/images/official/oudwood.png",
+    images: ["/images/official/oudwood.png"],
     category: "Unissex",
     featured: false,
     available: true
   },
   {
-    id: "dodo-7",
-    name: "Kit Essenciais Dodo", 
-    description: "Cofre com 5 decants de 10ml selecionados pela curadoria Dodo Imports.",
+    id: "elite-7",
+    name: "Kit Elite Signature",
+    description: "Kit com miniaturas selecionadas para conhecer os best-sellers da loja.",
     price: 520,
-    image: "/images/kit.svg",
-    category: "Colecoes",
+    image: "/images/official/kit.png",
+    images: ["/images/official/kit.png"],
+    category: "Kits",
     featured: false,
     available: true
   },
   {
-    id: "dodo-8",
-    name: "Discovery Unissex", 
-    description: "Set degustação com 8 amostras best-sellers masculinos e femininos.",
+    id: "elite-8",
+    name: "Discovery Set Unissex",
+    description: "Seleção de miniaturas premium para testar fragrâncias importadas variadas.",
     price: 310,
-    image: "/images/discovery.svg",
-    category: "Colecoes",
+    image: "/images/official/discovery.png",
+    images: ["/images/official/discovery.png"],
+    category: "Kits",
     featured: false,
     available: true
   }
 ];
+
+const defaultImage = "/images/official/hero.png";
+
+function normalizeCategory(category: unknown): MenuItem["category"] {
+  const input = String(category ?? "").trim().toLowerCase();
+  const mapping: Record<string, MenuItem["category"]> = {
+    homme: "Masculino",
+    masculino: "Masculino",
+    men: "Masculino",
+    femme: "Feminino",
+    feminino: "Feminino",
+    women: "Feminino",
+    unisexe: "Unissex",
+    unissex: "Unissex",
+    unisex: "Unissex",
+    coffrets: "Kits",
+    kits: "Kits",
+    kit: "Kits"
+  };
+
+  return mapping[input] ?? "Unissex";
+}
+
+function normalizeImages(images: unknown, image: unknown) {
+  const fromArray = Array.isArray(images) ? images.filter((item): item is string => typeof item === "string") : [];
+  const primary = typeof image === "string" && image ? image : fromArray[0];
+  const normalized = [...new Set([...fromArray, primary].filter(Boolean))];
+
+  if (normalized.length === 0) {
+    return [defaultImage];
+  }
+
+  return normalized;
+}
+
+function normalizeMenuItem(item: Partial<MenuItem> & { id?: string }): MenuItem {
+  const images = normalizeImages(item.images, item.image);
+
+  return {
+    id: item.id ?? randomUUID(),
+    name: String(item.name ?? "").trim(),
+    description: String(item.description ?? "").trim(),
+    price: Number(item.price ?? 0),
+    image: images[0] ?? defaultImage,
+    images,
+    category: normalizeCategory(item.category),
+    featured: Boolean(item.featured),
+    available: item.available ?? true
+  };
+}
 
 async function ensureDataFiles() {
   await mkdir(dataDir, { recursive: true });
@@ -122,15 +180,16 @@ async function writeJsonFile<T>(filePath: string, data: T) {
 }
 
 export async function getMenuItems() {
-  return readJsonFile<MenuItem[]>(menuPath, initialMenu);
+  const menu = await readJsonFile<MenuItem[]>(menuPath, initialMenu);
+  return menu.map((item) => normalizeMenuItem(item));
 }
 
 export async function addMenuItem(input: Omit<MenuItem, "id">) {
   const menu = await getMenuItems();
-  const newItem: MenuItem = {
+  const newItem = normalizeMenuItem({
     ...input,
     id: randomUUID()
-  };
+  });
 
   menu.push(newItem);
   await writeJsonFile(menuPath, menu);
@@ -146,11 +205,15 @@ export async function updateMenuItem(id: string, updates: Partial<Omit<MenuItem,
   }
 
   const current = menu[index];
-  const updated: MenuItem = {
+  const sanitizedUpdates = Object.fromEntries(
+    Object.entries(updates).filter(([, value]) => value !== undefined)
+  ) as Partial<Omit<MenuItem, "id">>;
+
+  const updated = normalizeMenuItem({
     ...current,
-    ...updates,
+    ...sanitizedUpdates,
     id
-  };
+  });
 
   menu[index] = updated;
   await writeJsonFile(menuPath, menu);
@@ -173,7 +236,7 @@ export async function createOrder(payload: Omit<Order, "id" | "createdAt" | "sta
   const orders = await readJsonFile<Order[]>(ordersPath, []);
   const order: Order = {
     ...payload,
-    id: `DODO-${Date.now()}`,
+    id: `EA-${Date.now()}`,
     createdAt: new Date().toISOString(),
     status: "Recebido"
   };

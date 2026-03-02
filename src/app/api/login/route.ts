@@ -17,11 +17,19 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!username || !password || username !== adminUser || password !== adminPassword) {
+  const normalizedUser = username?.trim();
+  const normalizedPassword = password?.trim();
+
+  if (
+    !normalizedUser ||
+    !normalizedPassword ||
+    normalizedUser !== adminUser.trim() ||
+    normalizedPassword !== adminPassword.trim()
+  ) {
     return NextResponse.json({ error: "Usuario ou senha invalidos" }, { status: 401 });
   }
 
-  const token = createSessionToken(username);
+  const token = createSessionToken(normalizedUser);
   const response = NextResponse.json({ success: true });
   const isHttps = new URL(request.url).protocol === "https:";
 

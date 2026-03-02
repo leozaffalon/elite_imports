@@ -14,12 +14,23 @@ export async function POST(request: Request) {
   }
 
   if (!file.type.startsWith("image/")) {
-    return NextResponse.json({ error: "Apenas imagens são aceitas" }, { status: 400 });
+    return NextResponse.json({ error: "Apenas imagens sao aceitas" }, { status: 400 });
   }
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  const ext = file.name.includes(".") ? file.name.split(".").pop() : "png";
+  if (buffer.length > 5 * 1024 * 1024) {
+    return NextResponse.json({ error: "Imagem excede 5MB" }, { status: 400 });
+  }
+
+  const extByMime: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/avif": "avif"
+  };
+
+  const ext = extByMime[file.type] ?? "png";
   const filename = `${randomUUID()}.${ext}`;
 
   await mkdir(uploadsDir, { recursive: true });

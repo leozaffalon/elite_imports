@@ -1,62 +1,106 @@
 [
   {
-    "id": "dodo-1",
+    "id": "elite-1",
     "name": "Sauvage Elixir (Dior)",
-    "description": "Lavanda apimentada, madeiras secas e acorde amber para presença marcante.",
+    "description": "Notas de canela, lavanda e acorde amadeirado intenso com assinatura sofisticada.",
     "price": 899,
-    "image": "/images/sauvage.svg",
+    "image": "/images/official/sauvage.png",
+    "images": [
+      "/images/official/sauvage.png"
+    ],
     "category": "Masculino",
     "featured": true,
     "available": true
   },
   {
-    "id": "dodo-2",
+    "id": "elite-2",
     "name": "Bleu de Chanel",
-    "description": "Citrus fresco com incenso e cedro, assinatura versatil para o dia todo.",
+    "description": "Cítrico amadeirado elegante, com incenso e cedro para uso diário e noturno.",
     "price": 829,
-    "image": "/images/bleu.svg",
+    "image": "/images/official/bleu.png",
+    "images": [
+      "/images/official/bleu.png"
+    ],
     "category": "Masculino",
     "featured": true,
     "available": true
   },
   {
-    "id": "dodo-3",
+    "id": "elite-3",
     "name": "La Vie Est Belle",
-    "description": "Iris gourmand com baunilha e praliné, feminino e luminosa.",
+    "description": "Perfume floral gourmand com íris, baunilha e pralinê de alta fixação.",
     "price": 749,
-    "image": "/images/lavie.svg",
+    "image": "/images/official/lavie.png",
+    "images": [
+      "/images/official/lavie.png"
+    ],
     "category": "Feminino",
     "featured": true,
     "available": true
   },
   {
-    "id": "dodo-8",
-    "name": "Discovery Unissex",
-    "description": "Set degustação com 8 amostras best-sellers masculinos e femininos.",
-    "price": 310,
-    "image": "/images/discovery.svg",
-    "category": "Colecoes",
+    "id": "elite-4",
+    "name": "Good Girl",
+    "description": "Floral oriental com jasmim e fava tonka, marcante e glamouroso.",
+    "price": 699,
+    "image": "/images/official/goodgirl.png",
+    "images": [
+      "/images/official/goodgirl.png"
+    ],
+    "category": "Feminino",
     "featured": false,
     "available": true
   },
   {
-    "name": "Perfume asad Elixir",
-    "description": "Marca Genérico\nForma do produto Spray\nVolume do produto 100 Mililitros\nAroma Ambar\nCaracterísticas especiais De longa duração\nConcentração de fragrância Eau de Parfum\nAsad Elixir - Perfume Masculino Asad Elixir é a escolha perfeita para homens que buscam sofisticação e confiança. 🌿 Com notas frescas de bergamota 🍋 e maçã verde 🍏, combinadas com especiarias exóticas como canela e cardamomo, ele te envolve em uma aura única. Sua base amadeirada de sândalo \n- e âmbar dá um toque duradouro, que permanece por até 12 horas. Ideal para ocasiões especiais ou para deixar sua marca no dia a dia. \n- Para um efeito duradouro, aplique nas áreas de pulsação, como pescoço e punhos.✨ Sinta-se poderoso e inesquecível!",
-    "price": 299,
-    "image": "/uploads/83b9e82a-7b81-49ed-8269-30bff9b4d32a.jpeg",
-    "category": "Masculino",
-    "featured": true,
-    "available": true,
-    "id": "f79d762c-8a5b-4584-8099-02b6194f8482"
+    "id": "elite-5",
+    "name": "Light Blue",
+    "description": "Fresco e cítrico, com limão siciliano e maçã verde em perfil mediterrâneo.",
+    "price": 589,
+    "image": "/images/official/lightblue.png",
+    "images": [
+      "/images/official/lightblue.png"
+    ],
+    "category": "Unissex",
+    "featured": false,
+    "available": true
   },
   {
-    "name": "Perfume asad Elixir",
-    "description": "Marca Genérico\nForma do produto Spray\nVolume do produto 100 Mililitros\nAroma Ambar\nCaracterísticas especiais De longa duração\nConcentração de fragrância Eau de Parfum\nAsad Elixir - Perfume Masculino Asad Elixir é a escolha perfeita para homens que buscam sofisticação e confiança. 🌿 Com notas frescas de bergamota 🍋 e maçã verde 🍏, combinadas com especiarias exóticas como canela e cardamomo, ele te envolve em uma aura única. Sua base amadeirada de sândalo \n- e âmbar dá um toque duradouro, que permanece por até 12 horas. Ideal para ocasiões especiais ou para deixar sua marca no dia a dia. \n- Para um efeito duradouro, aplique nas áreas de pulsação, como pescoço e punhos.✨ Sinta-se poderoso e inesquecível!",
-    "price": 299,
-    "image": "/uploads/2e5bfcdb-5015-4a59-8d1b-5290826c4850.jpeg",
-    "category": "Colecoes",
-    "featured": true,
-    "available": true,
-    "id": "01cf5984-55b2-48ee-b752-776521d6bcb6"
+    "id": "elite-6",
+    "name": "Oud Wood",
+    "description": "Blend de oud com cardamomo e baunilha seca, sofisticado e exclusivo.",
+    "price": 1190,
+    "image": "/images/official/oudwood.png",
+    "images": [
+      "/images/official/oudwood.png"
+    ],
+    "category": "Unissex",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "elite-7",
+    "name": "Kit Elite Signature",
+    "description": "Kit com miniaturas selecionadas para conhecer os best-sellers da loja.",
+    "price": 520,
+    "image": "/images/official/kit.png",
+    "images": [
+      "/images/official/kit.png"
+    ],
+    "category": "Kits",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "elite-8",
+    "name": "Discovery Set Unissex",
+    "description": "Seleção de miniaturas premium para testar fragrâncias importadas variadas.",
+    "price": 310,
+    "image": "/images/official/discovery.png",
+    "images": [
+      "/images/official/discovery.png"
+    ],
+    "category": "Kits",
+    "featured": false,
+    "available": true
   }
 ]
