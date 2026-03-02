@@ -1,0 +1,17 @@
+<svg width="480" height="320" viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1728"/>
+      <stop offset="100%" stop-color="#08111f"/>
+    </linearGradient>
+    <linearGradient id="bottle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f263b"/>
+      <stop offset="100%" stop-color="#07101e"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="320" rx="22" fill="url(#bg)"/>
+  <rect x="170" y="80" width="140" height="170" rx="18" fill="url(#bottle)" stroke="#6aa9ff" stroke-width="3"/>
+  <rect x="205" y="52" width="70" height="26" rx="6" fill="#0b1626" stroke="#6aa9ff" stroke-width="3"/>
+  <text x="240" y="156" text-anchor="middle" fill="#e6f0ff" font-family="'Manrope', 'Segoe UI', sans-serif" font-size="20" font-weight="700">Bleu</text>
+  <text x="240" y="182" text-anchor="middle" fill="#c5d6f5" font-family="'Manrope', 'Segoe UI', sans-serif" font-size="14">de Chanel</text>
+</svg>

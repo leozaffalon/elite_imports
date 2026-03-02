@@ -1,0 +1,30 @@
+<svg width="880" height="640" viewBox="0 0 880 640" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d3b2e"/>
+      <stop offset="100%" stop-color="#0b241c"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f3f6ef"/>
+      <stop offset="100%" stop-color="#dfe7da"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f5d27a"/>
+      <stop offset="100%" stop-color="#eab447"/>
+    </linearGradient>
+  </defs>
+  <rect width="880" height="640" rx="38" fill="url(#bg)"/>
+  <circle cx="200" cy="180" r="140" fill="#104536" opacity="0.5"/>
+  <circle cx="640" cy="260" r="210" fill="#0f2e23" opacity="0.65"/>
+  <path d="M560 210c0 70-46 128-120 150-74-22-120-80-120-150s54-126 120-126 120 56 120 126z" fill="#ffffff" fill-opacity="0.04" stroke="#58c7a0" stroke-opacity="0.2" stroke-width="6"/>
+  <rect x="360" y="150" width="160" height="280" rx="32" fill="url(#glass)" stroke="#1c3b30" stroke-width="6"/>
+  <rect x="385" y="118" width="110" height="40" rx="12" fill="#0f241c" stroke="#58c7a0" stroke-width="3"/>
+  <rect x="400" y="98" width="80" height="28" rx="9" fill="url(#gold)" stroke="#1c3b30" stroke-width="3"/>
+  <rect x="360" y="238" width="160" height="130" rx="22" fill="#f7faf3" fill-opacity="0.8"/>
+  <text x="440" y="280" text-anchor="middle" fill="#0d3b2e" font-family="'Montserrat','Segoe UI',sans-serif" font-size="28" font-weight="700">Dodo</text>
+  <text x="440" y="314" text-anchor="middle" fill="#174433" font-family="'Montserrat','Segoe UI',sans-serif" font-size="18" font-weight="600">Imports</text>
+  <text x="440" y="350" text-anchor="middle" fill="#4a5f54" font-family="'Mulish','Segoe UI',sans-serif" font-size="12" font-weight="600" letter-spacing="3">PERFUMES</text>
+  <path d="M305 420c80 40 210 40 290 0" stroke="#58c7a0" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+  <text x="220" y="470" fill="#b7c8bf" font-family="'Mulish','Segoe UI',sans-serif" font-size="18" font-weight="600">Clássicos & Lançamentos</text>
+  <text x="220" y="500" fill="#9fb3a8" font-family="'Mulish','Segoe UI',sans-serif" font-size="14">Curadoria premium com entrega rápida em todo o Brasil</text>
+</svg>

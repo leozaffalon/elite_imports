@@ -1,0 +1,62 @@
+[
+  {
+    "id": "dodo-1",
+    "name": "Sauvage Elixir (Dior)",
+    "description": "Lavanda apimentada, madeiras secas e acorde amber para presença marcante.",
+    "price": 899,
+    "image": "/images/sauvage.svg",
+    "category": "Masculino",
+    "featured": true,
+    "available": true
+  },
+  {
+    "id": "dodo-2",
+    "name": "Bleu de Chanel",
+    "description": "Citrus fresco com incenso e cedro, assinatura versatil para o dia todo.",
+    "price": 829,
+    "image": "/images/bleu.svg",
+    "category": "Masculino",
+    "featured": true,
+    "available": true
+  },
+  {
+    "id": "dodo-3",
+    "name": "La Vie Est Belle",
+    "description": "Iris gourmand com baunilha e praliné, feminino e luminosa.",
+    "price": 749,
+    "image": "/images/lavie.svg",
+    "category": "Feminino",
+    "featured": true,
+    "available": true
+  },
+  {
+    "id": "dodo-8",
+    "name": "Discovery Unissex",
+    "description": "Set degustação com 8 amostras best-sellers masculinos e femininos.",
+    "price": 310,
+    "image": "/images/discovery.svg",
+    "category": "Colecoes",
+    "featured": false,
+    "available": true
+  },
+  {
+    "name": "Perfume asad Elixir",
+    "description": "Marca Genérico\nForma do produto Spray\nVolume do produto 100 Mililitros\nAroma Ambar\nCaracterísticas especiais De longa duração\nConcentração de fragrância Eau de Parfum\nAsad Elixir - Perfume Masculino Asad Elixir é a escolha perfeita para homens que buscam sofisticação e confiança. 🌿 Com notas frescas de bergamota 🍋 e maçã verde 🍏, combinadas com especiarias exóticas como canela e cardamomo, ele te envolve em uma aura única. Sua base amadeirada de sândalo \n- e âmbar dá um toque duradouro, que permanece por até 12 horas. Ideal para ocasiões especiais ou para deixar sua marca no dia a dia. \n- Para um efeito duradouro, aplique nas áreas de pulsação, como pescoço e punhos.✨ Sinta-se poderoso e inesquecível!",
+    "price": 299,
+    "image": "/uploads/83b9e82a-7b81-49ed-8269-30bff9b4d32a.jpeg",
+    "category": "Masculino",
+    "featured": true,
+    "available": true,
+    "id": "f79d762c-8a5b-4584-8099-02b6194f8482"
+  },
+  {
+    "name": "Perfume asad Elixir",
+    "description": "Marca Genérico\nForma do produto Spray\nVolume do produto 100 Mililitros\nAroma Ambar\nCaracterísticas especiais De longa duração\nConcentração de fragrância Eau de Parfum\nAsad Elixir - Perfume Masculino Asad Elixir é a escolha perfeita para homens que buscam sofisticação e confiança. 🌿 Com notas frescas de bergamota 🍋 e maçã verde 🍏, combinadas com especiarias exóticas como canela e cardamomo, ele te envolve em uma aura única. Sua base amadeirada de sândalo \n- e âmbar dá um toque duradouro, que permanece por até 12 horas. Ideal para ocasiões especiais ou para deixar sua marca no dia a dia. \n- Para um efeito duradouro, aplique nas áreas de pulsação, como pescoço e punhos.✨ Sinta-se poderoso e inesquecível!",
+    "price": 299,
+    "image": "/uploads/2e5bfcdb-5015-4a59-8d1b-5290826c4850.jpeg",
+    "category": "Colecoes",
+    "featured": true,
+    "available": true,
+    "id": "01cf5984-55b2-48ee-b752-776521d6bcb6"
+  }
+]

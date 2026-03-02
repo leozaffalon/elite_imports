@@ -1,0 +1,17 @@
+<svg width="480" height="320" viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f1c34"/>
+      <stop offset="100%" stop-color="#0b1325"/>
+    </linearGradient>
+    <linearGradient id="bottle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2f5ba7"/>
+      <stop offset="100%" stop-color="#0d1a35"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="320" rx="22" fill="url(#bg)"/>
+  <rect x="180" y="70" width="120" height="180" rx="22" fill="url(#bottle)" stroke="#6fb3ff" stroke-width="4"/>
+  <rect x="205" y="46" width="70" height="30" rx="8" fill="#0b1528" stroke="#6fb3ff" stroke-width="3"/>
+  <text x="240" y="150" text-anchor="middle" fill="#e8f2ff" font-family="'Manrope', 'Segoe UI', sans-serif" font-size="20" font-weight="700">Sauvage</text>
+  <text x="240" y="178" text-anchor="middle" fill="#c4d6ff" font-family="'Manrope', 'Segoe UI', sans-serif" font-size="14">Elixir</text>
+</svg>

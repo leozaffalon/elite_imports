@@ -1,0 +1,21 @@
+<svg width="480" height="320" viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d1526"/>
+      <stop offset="100%" stop-color="#0a1020"/>
+    </linearGradient>
+    <linearGradient id="box" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f6c965"/>
+      <stop offset="100%" stop-color="#f0b126"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="320" rx="22" fill="url(#bg)"/>
+  <rect x="110" y="90" width="260" height="150" rx="18" fill="#131b30" stroke="#f6c965" stroke-width="4"/>
+  <rect x="130" y="110" width="80" height="110" rx="12" fill="#1c253c" stroke="#2e3a55"/>
+  <rect x="220" y="110" width="80" height="110" rx="12" fill="#1c253c" stroke="#2e3a55"/>
+  <rect x="310" y="110" width="50" height="110" rx="12" fill="#1c253c" stroke="#2e3a55"/>
+  <path d="M110 118h260" stroke="#f6c965" stroke-width="4" stroke-dasharray="10 10" opacity="0.8"/>
+  <rect x="130" y="76" width="220" height="32" rx="10" fill="url(#box)"/>
+  <text x="240" y="138" text-anchor="middle" fill="#f6c965" font-family="'Manrope', 'Segoe UI', sans-serif" font-size="18" font-weight="800">Kit Essenciais</text>
+  <text x="240" y="168" text-anchor="middle" fill="#c9d2e6" font-family="'Manrope', 'Segoe UI', sans-serif" font-size="13">5 x 10ml curadoria Dodo</text>
+</svg>
