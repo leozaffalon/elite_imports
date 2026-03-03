@@ -16,7 +16,9 @@ const bodyFont = Manrope({
 export const metadata: Metadata = {
   title: "Elite Aromas | Perfumes Importados Originais",
   description:
-    "Elite Aromas: perfumes importados originais, curadoria premium e atendimento oficial via WhatsApp."
+    "Elite Aromas: perfumes importados originais, curadoria premium e atendimento oficial via WhatsApp.",
+  applicationName: "Elite Aromas",
+  metadataBase: new URL("https://elite-imports.vercel.app")
 };
 
 export default function RootLayout({
