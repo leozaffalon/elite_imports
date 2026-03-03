@@ -171,7 +171,7 @@ export default function AdminPanel() {
       body: JSON.stringify(payload)
     });
 
-    const data = (await response.json()) as { error?: string };
+    const data = (await response.json()) as { id?: string; error?: string };
 
     if (!response.ok) {
       setMessage(data.error ?? "Nao foi possivel criar o item.");
@@ -182,6 +182,9 @@ export default function AdminPanel() {
     setUploadStatus("");
     setMessage("Item adicionado no catalogo.");
     await refreshMenu();
+
+    // Leva o admin direto para o catalogo da loja apos criar o produto.
+    window.location.assign("/#catalogo");
   }
 
   function startEditing(item: MenuItem) {
