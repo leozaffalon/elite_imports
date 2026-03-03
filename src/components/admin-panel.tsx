@@ -50,13 +50,24 @@ export default function AdminPanel() {
 
   async function refreshMenu() {
     const response = await fetch("/api/admin/menu", { cache: "no-store" });
+    const payload = (await response.json().catch(() => null)) as MenuItem[] | { error?: string } | null;
 
     if (response.status === 401) {
       setLoggedIn(false);
       return;
     }
 
-    const payload = (await response.json()) as MenuItem[];
+    if (!response.ok) {
+      const error = payload && !Array.isArray(payload) ? payload.error : undefined;
+      setMessage(error ?? "Nao foi possivel carregar o catalogo do admin.");
+      return;
+    }
+
+    if (!Array.isArray(payload)) {
+      setMessage("Resposta invalida ao carregar catalogo.");
+      return;
+    }
+
     setMenu(payload);
     setLoggedIn(true);
   }
@@ -189,7 +200,7 @@ export default function AdminPanel() {
     await refreshMenu();
 
     // Leva o admin direto para o catalogo da loja apos criar o produto.
-    window.location.assign("/#catalogo");
+    window.location.assign(`/?at=${Date.now()}#catalogo`);
   }
 
   function startEditing(item: MenuItem) {

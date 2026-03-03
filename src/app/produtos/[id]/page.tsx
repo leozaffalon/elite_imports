@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getMenuItems } from "@/lib/data-store";
 import ProductDetail from "@/components/product-detail";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: {
     id: string;

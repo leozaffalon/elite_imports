@@ -7,7 +7,6 @@ import { MenuItem, Order } from "@/lib/types";
 const dataDir = path.join(process.cwd(), "data");
 const menuPath = path.join(dataDir, "menu.json");
 const ordersPath = path.join(dataDir, "orders.json");
-const runtimeStore = new Map<string, unknown>();
 const blobMenuPath = "catalog/menu.json";
 const blobOrdersPath = "catalog/orders.json";
 
@@ -203,21 +202,16 @@ async function writeBlobJson<T>(blobPath: string, data: T) {
 }
 
 async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
-  if (runtimeStore.has(filePath)) {
-    return runtimeStore.get(filePath) as T;
-  }
-
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
   const blobPath = getBlobPathForFile(filePath);
   if (blobToken && blobPath) {
     try {
       const blobValue = await readBlobJson<T>(blobPath);
       if (blobValue !== null) {
-        runtimeStore.set(filePath, blobValue);
         return blobValue;
       }
     } catch {
-      // segue para fallback em arquivo local
+      // Se o blob falhar, usa fallback local e tenta reidratar o blob.
     }
   }
 
@@ -225,7 +219,13 @@ async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
   try {
     const raw = await readFile(filePath, "utf-8");
     const parsed = JSON.parse(raw) as T;
-    runtimeStore.set(filePath, parsed);
+
+    if (blobToken && blobPath) {
+      await writeBlobJson(blobPath, parsed).catch(() => {
+        // Evita falhar a leitura caso o blob esteja temporariamente indisponivel.
+      });
+    }
+
     return parsed;
   } catch {
     return fallback;
@@ -233,11 +233,10 @@ async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
 }
 
 async function writeJsonFile<T>(filePath: string, data: T) {
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
   const blobPath = getBlobPathForFile(filePath);
   if (blobToken && blobPath) {
     await writeBlobJson(blobPath, data);
-    runtimeStore.set(filePath, data);
     return;
   }
 
@@ -245,13 +244,14 @@ async function writeJsonFile<T>(filePath: string, data: T) {
     await ensureDataFiles();
     await writeFile(filePath, JSON.stringify(data, null, 2));
   } catch (error) {
-    if (!isReadonlyWriteError(error)) {
-      throw error;
+    if (isReadonlyWriteError(error)) {
+      throw new Error(
+        "Persistencia indisponivel neste ambiente. Configure BLOB_READ_WRITE_TOKEN para salvar o catalogo."
+      );
     }
-  }
 
-  // Fallback para ambientes serverless com filesystem somente leitura.
-  runtimeStore.set(filePath, data);
+    throw error;
+  }
 }
 
 export async function getMenuItems() {

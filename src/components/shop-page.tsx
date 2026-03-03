@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { MenuCategory, MenuItem } from "@/lib/types";
 
 type CartItem = {
@@ -38,6 +38,7 @@ const currency = new Intl.NumberFormat("pt-BR", {
 });
 
 export default function ShopPage({ initialMenu }: ShopPageProps) {
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenu);
   const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>("Todos");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customer, setCustomer] = useState<CustomerForm>({
@@ -48,17 +49,31 @@ export default function ShopPage({ initialMenu }: ShopPageProps) {
   });
   const [feedback, setFeedback] = useState("");
 
-  const featured = useMemo(() => initialMenu.filter((item) => item.featured).slice(0, 3), [initialMenu]);
+  useEffect(() => {
+    fetch("/api/menu", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const payload = (await response.json()) as MenuItem[];
+        if (Array.isArray(payload)) {
+          setMenuItems(payload);
+        }
+      })
+      .catch(() => {
+        // Mantem o catalogo inicial caso a atualizacao em cliente falhe.
+      });
+  }, []);
+
+  const featured = useMemo(() => menuItems.filter((item) => item.featured).slice(0, 3), [menuItems]);
 
   const menu = useMemo(() => {
-    return initialMenu.filter((item) => {
+    return menuItems.filter((item) => {
       if (activeCategory === "Todos") {
         return true;
       }
 
       return item.category === activeCategory;
     });
-  }, [activeCategory, initialMenu]);
+  }, [activeCategory, menuItems]);
 
   const subtotal = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);

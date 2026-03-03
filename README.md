@@ -29,6 +29,7 @@ Arquivo `.env.local` (na raiz):
 ADMIN_USERNAME=admin_dodo
 ADMIN_PASSWORD=TroqueAgora@123
 SESSION_SECRET=seu-segredo-forte
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxx
 ```
 
 Essas variaveis ja estao fora do Git via `.gitignore`.
@@ -51,7 +52,8 @@ Os dados sao salvos em:
 - `data/menu.json`
 - `data/orders.json`
 
-Para deploy em producao com persistencia de longo prazo, o ideal e trocar para banco externo (ex.: Vercel Postgres, Supabase, Neon).
+Para deploy no Vercel, configure `BLOB_READ_WRITE_TOKEN` para persistir catalogo e pedidos entre funcoes serverless.
+Sem esse token em producao, o admin nao consegue salvar alteracoes de forma duravel.
 
 ## 5) Deploy no Vercel
 
@@ -61,4 +63,5 @@ Para deploy em producao com persistencia de longo prazo, o ideal e trocar para b
    - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
    - `SESSION_SECRET`
+   - `BLOB_READ_WRITE_TOKEN`
 4. Deploy.
