@@ -72,6 +72,21 @@ export default function AdminPanel() {
     setLoggedIn(true);
   }
 
+  async function waitForCatalogSync(itemId: string) {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const response = await fetch("/api/menu", { cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as MenuItem[] | null;
+
+      if (response.ok && Array.isArray(payload) && payload.some((item) => item.id === itemId)) {
+        return true;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    }
+
+    return false;
+  }
+
   useEffect(() => {
     refreshMenu().catch(() => setLoggedIn(false));
   }, []);
@@ -196,9 +211,17 @@ export default function AdminPanel() {
 
     setNewItem(emptyItem);
     setUploadStatus("");
-    setMessage("Item adicionado no catalogo.");
     await refreshMenu();
 
+    if (data.id) {
+      const synced = await waitForCatalogSync(data.id);
+
+      if (!synced) {
+        setMessage("Produto salvo. O catalogo pode levar alguns segundos para atualizar.");
+      }
+    }
+
+    setMessage("Item adicionado no catalogo.");
     // Leva o admin direto para o catalogo da loja apos criar o produto.
     window.location.assign(`/?at=${Date.now()}#catalogo`);
   }
