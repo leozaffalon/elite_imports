@@ -489,6 +489,9 @@ select:focus {
 .admin-actions button,
 .image-list-item button,
 .thumb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   border-radius: 999px;
   cursor: pointer;
@@ -844,9 +847,99 @@ select:focus {
 }
 
 @media (max-width: 760px) {
+  .container {
+    width: min(1180px, 94vw);
+  }
+
   .topbar {
+    gap: 0.65rem;
     flex-direction: column;
     align-items: flex-start;
+    padding: 0.75rem 0 0.65rem;
+  }
+
+  .brand {
+    font-size: 1.28rem;
+  }
+
+  .brand-mark {
+    width: 1.95rem;
+    height: 1.95rem;
+    font-size: 0.78rem;
+  }
+
+  .nav-links {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .nav-links a {
+    text-align: center;
+    padding: 0.52rem 0.3rem;
+    font-size: 0.78rem;
+  }
+
+  .hero {
+    gap: 0.7rem;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(1.7rem, 10vw, 2.3rem);
+    line-height: 1;
+  }
+
+  .hero-copy p {
+    font-size: 0.94rem;
+  }
+
+  .hero-actions {
+    width: 100%;
+  }
+
+  .hero-actions .primary-btn {
+    width: 100%;
+  }
+
+  .trust-pill {
+    font-size: 0.76rem;
+    padding: 0.46rem 0.55rem;
+  }
+
+  .card-image-wrap img {
+    height: 210px;
+  }
+
+  .card-content h3 {
+    font-size: 1.15rem;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-actions .secondary-btn {
+    width: 100%;
+  }
+
+  .cart-row {
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .qty-controls {
+    align-self: flex-start;
+  }
+
+  .product-info h1 {
+    font-size: clamp(1.7rem, 10vw, 2.45rem);
+  }
+
+  .product-actions .primary-btn,
+  .product-actions .secondary-btn {
+    width: 100%;
   }
 
   .hero-copy,
@@ -863,10 +956,13 @@ select:focus {
   .trust-strip,
   .feature-panels,
   .menu-grid,
-  .thumb-grid,
   .admin-inline-grid,
   .admin-inline-grid.compact {
     grid-template-columns: 1fr;
+  }
+
+  .thumb-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .password-field,
@@ -885,5 +981,19 @@ select:focus {
 
   .admin-shell {
     padding: 0.9rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .nav-links {
+    grid-template-columns: 1fr;
+  }
+
+  .card-image-wrap img {
+    height: 185px;
+  }
+
+  .thumb-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

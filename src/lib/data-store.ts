@@ -1,11 +1,15 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { get as getBlob, put as putBlob } from "@vercel/blob";
 import { MenuItem, Order } from "@/lib/types";
 
 const dataDir = path.join(process.cwd(), "data");
 const menuPath = path.join(dataDir, "menu.json");
 const ordersPath = path.join(dataDir, "orders.json");
+const runtimeStore = new Map<string, unknown>();
+const blobMenuPath = "catalog/menu.json";
+const blobOrdersPath = "catalog/orders.json";
 
 const initialMenu: MenuItem[] = [
   {
@@ -164,19 +168,90 @@ async function ensureDataFiles() {
   }
 }
 
+function isReadonlyWriteError(error: unknown) {
+  const code = (error as NodeJS.ErrnoException | undefined)?.code;
+  return code === "EROFS" || code === "EPERM" || code === "EACCES";
+}
+
+function getBlobPathForFile(filePath: string) {
+  if (filePath === menuPath) return blobMenuPath;
+  if (filePath === ordersPath) return blobOrdersPath;
+  return null;
+}
+
+async function readBlobJson<T>(blobPath: string) {
+  const result = await getBlob(blobPath, { access: "public" });
+  if (!result || result.statusCode !== 200 || !result.stream) {
+    return null;
+  }
+
+  const raw = await new Response(result.stream).text();
+  if (!raw) {
+    return null;
+  }
+
+  return JSON.parse(raw) as T;
+}
+
+async function writeBlobJson<T>(blobPath: string, data: T) {
+  await putBlob(blobPath, JSON.stringify(data, null, 2), {
+    access: "public",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json"
+  });
+}
+
 async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
+  if (runtimeStore.has(filePath)) {
+    return runtimeStore.get(filePath) as T;
+  }
+
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const blobPath = getBlobPathForFile(filePath);
+  if (blobToken && blobPath) {
+    try {
+      const blobValue = await readBlobJson<T>(blobPath);
+      if (blobValue !== null) {
+        runtimeStore.set(filePath, blobValue);
+        return blobValue;
+      }
+    } catch {
+      // segue para fallback em arquivo local
+    }
+  }
+
   await ensureDataFiles();
   try {
     const raw = await readFile(filePath, "utf-8");
-    return JSON.parse(raw) as T;
+    const parsed = JSON.parse(raw) as T;
+    runtimeStore.set(filePath, parsed);
+    return parsed;
   } catch {
     return fallback;
   }
 }
 
 async function writeJsonFile<T>(filePath: string, data: T) {
-  await ensureDataFiles();
-  await writeFile(filePath, JSON.stringify(data, null, 2));
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const blobPath = getBlobPathForFile(filePath);
+  if (blobToken && blobPath) {
+    await writeBlobJson(blobPath, data);
+    runtimeStore.set(filePath, data);
+    return;
+  }
+
+  try {
+    await ensureDataFiles();
+    await writeFile(filePath, JSON.stringify(data, null, 2));
+  } catch (error) {
+    if (!isReadonlyWriteError(error)) {
+      throw error;
+    }
+  }
+
+  // Fallback para ambientes serverless com filesystem somente leitura.
+  runtimeStore.set(filePath, data);
 }
 
 export async function getMenuItems() {
