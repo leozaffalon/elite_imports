@@ -47,6 +47,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Categoria invalida" }, { status: 400 });
   }
 
+  if (sanitizedImages.length < 3) {
+    return NextResponse.json(
+      { error: "Cada novo produto deve ter no minimo 3 imagens." },
+      { status: 400 }
+    );
+  }
+
   const item = await addMenuItem({
     name: body.name,
     description: body.description,

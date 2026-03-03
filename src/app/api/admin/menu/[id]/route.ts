@@ -37,6 +37,13 @@ export async function PUT(request: Request, context: Context) {
     ? body.images.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
     : undefined;
 
+  if (sanitizedImages && sanitizedImages.length < 3) {
+    return NextResponse.json(
+      { error: "Um produto deve manter no minimo 3 imagens." },
+      { status: 400 }
+    );
+  }
+
   const updates = { ...body } as typeof body;
   if (sanitizedImages) {
     updates.images = sanitizedImages;

@@ -111,10 +111,10 @@ export default function AdminPanel() {
       body: data
     });
 
-    const payload = (await response.json()) as { url?: string; error?: string };
+    const payload = (await response.json().catch(() => ({}))) as { url?: string; error?: string };
 
     if (!response.ok || !payload.url) {
-      throw new Error(payload.error ?? "Falha no upload.");
+      throw new Error(payload.error ?? `Falha no upload (HTTP ${response.status}).`);
     }
 
     return payload.url;
@@ -157,6 +157,11 @@ export default function AdminPanel() {
     setMessage("");
 
     const images = newItem.images.length > 0 ? newItem.images : [newItem.image];
+    if (images.length < 3) {
+      setMessage("Adicione no minimo 3 imagens para cadastrar o produto.");
+      return;
+    }
+
     const payload = {
       ...newItem,
       image: images[0],
@@ -396,7 +401,9 @@ export default function AdminPanel() {
                   }}
                 />
                 <p>Solte aqui os arquivos ou clique para selecionar</p>
-                <span className="muted">A primeira imagem da lista vira a capa do produto.</span>
+                <span className="muted">
+                  A primeira imagem vira capa. Minimo obrigatorio: 3 imagens.
+                </span>
               </div>
             </label>
 
