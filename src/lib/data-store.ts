@@ -178,8 +178,8 @@ function getBlobPathForFile(filePath: string) {
   return null;
 }
 
-async function readBlobJson<T>(blobPath: string) {
-  const result = await getBlob(blobPath, { access: "public" });
+async function readBlobJson<T>(blobPath: string, token: string) {
+  const result = await getBlob(blobPath, { access: "public", token });
   if (!result || result.statusCode !== 200 || !result.stream) {
     return null;
   }
@@ -192,12 +192,13 @@ async function readBlobJson<T>(blobPath: string) {
   return JSON.parse(raw) as T;
 }
 
-async function writeBlobJson<T>(blobPath: string, data: T) {
+async function writeBlobJson<T>(blobPath: string, data: T, token: string) {
   await putBlob(blobPath, JSON.stringify(data, null, 2), {
     access: "public",
     addRandomSuffix: false,
     allowOverwrite: true,
-    contentType: "application/json"
+    contentType: "application/json",
+    token
   });
 }
 
@@ -206,7 +207,7 @@ async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
   const blobPath = getBlobPathForFile(filePath);
   if (blobToken && blobPath) {
     try {
-      const blobValue = await readBlobJson<T>(blobPath);
+      const blobValue = await readBlobJson<T>(blobPath, blobToken);
       if (blobValue !== null) {
         return blobValue;
       }
@@ -221,7 +222,7 @@ async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
     const parsed = JSON.parse(raw) as T;
 
     if (blobToken && blobPath) {
-      await writeBlobJson(blobPath, parsed).catch(() => {
+      await writeBlobJson(blobPath, parsed, blobToken).catch(() => {
         // Evita falhar a leitura caso o blob esteja temporariamente indisponivel.
       });
     }
@@ -236,7 +237,7 @@ async function writeJsonFile<T>(filePath: string, data: T) {
   const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
   const blobPath = getBlobPathForFile(filePath);
   if (blobToken && blobPath) {
-    await writeBlobJson(blobPath, data);
+    await writeBlobJson(blobPath, data, blobToken);
     return;
   }
 
