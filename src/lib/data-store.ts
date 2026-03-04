@@ -202,9 +202,15 @@ async function writeBlobJson<T>(blobPath: string, data: T, token: string) {
   });
 }
 
-async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
+async function readJsonFile<T>(
+  filePath: string,
+  fallback: T,
+  options?: { strictBlobRead?: boolean }
+): Promise<T> {
   const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
   const blobPath = getBlobPathForFile(filePath);
+  const strictBlobRead = Boolean(options?.strictBlobRead);
+
   if (blobToken && blobPath) {
     try {
       const blobValue = await readBlobJson<T>(blobPath, blobToken);
@@ -213,7 +219,11 @@ async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
       }
       return fallback;
     } catch {
-      throw new Error("Falha ao ler dados persistidos no Blob.");
+      if (strictBlobRead) {
+        throw new Error("Falha ao ler dados persistidos no Blob.");
+      }
+
+      return fallback;
     }
   }
 
@@ -262,7 +272,9 @@ export async function getMenuItems() {
 }
 
 export async function addMenuItem(input: Omit<MenuItem, "id">) {
-  const menu = await getMenuItems();
+  const menu = (await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true })).map((item) =>
+    normalizeMenuItem(item)
+  );
   const newItem = normalizeMenuItem({
     ...input,
     id: randomUUID()
@@ -274,7 +286,9 @@ export async function addMenuItem(input: Omit<MenuItem, "id">) {
 }
 
 export async function updateMenuItem(id: string, updates: Partial<Omit<MenuItem, "id">>) {
-  const menu = await getMenuItems();
+  const menu = (await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true })).map((item) =>
+    normalizeMenuItem(item)
+  );
   const index = menu.findIndex((item) => item.id === id);
 
   if (index === -1) {
@@ -298,7 +312,9 @@ export async function updateMenuItem(id: string, updates: Partial<Omit<MenuItem,
 }
 
 export async function deleteMenuItem(id: string) {
-  const menu = await getMenuItems();
+  const menu = (await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true })).map((item) =>
+    normalizeMenuItem(item)
+  );
   const index = menu.findIndex((item) => item.id === id);
 
   if (index === -1) {
