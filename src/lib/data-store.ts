@@ -211,8 +211,9 @@ async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
       if (blobValue !== null) {
         return blobValue;
       }
+      return fallback;
     } catch {
-      // Se o blob falhar, usa fallback local e tenta reidratar o blob.
+      throw new Error("Falha ao ler dados persistidos no Blob.");
     }
   }
 
@@ -256,7 +257,7 @@ async function writeJsonFile<T>(filePath: string, data: T) {
 }
 
 export async function getMenuItems() {
-  const menu = await readJsonFile<MenuItem[]>(menuPath, initialMenu);
+  const menu = await readJsonFile<MenuItem[]>(menuPath, []);
   return menu.map((item) => normalizeMenuItem(item));
 }
 
@@ -298,13 +299,14 @@ export async function updateMenuItem(id: string, updates: Partial<Omit<MenuItem,
 
 export async function deleteMenuItem(id: string) {
   const menu = await getMenuItems();
-  const nextMenu = menu.filter((item) => item.id !== id);
+  const index = menu.findIndex((item) => item.id === id);
 
-  if (nextMenu.length === menu.length) {
+  if (index === -1) {
     return false;
   }
 
-  await writeJsonFile(menuPath, nextMenu);
+  menu.splice(index, 1);
+  await writeJsonFile(menuPath, menu);
   return true;
 }
 

@@ -267,7 +267,12 @@ export default function AdminPanel() {
     await refreshMenu();
   }
 
-  async function deleteItem(id: string) {
+  async function deleteItem(id: string, name: string) {
+    const confirmed = window.confirm(`Tem certeza que deseja remover "${name}"?`);
+    if (!confirmed) {
+      return;
+    }
+
     const response = await fetch(`/api/admin/menu/${id}`, {
       method: "DELETE"
     });
@@ -690,7 +695,7 @@ export default function AdminPanel() {
                         <button onClick={() => startEditing(item)} type="button">
                           Editar
                         </button>
-                        <button onClick={() => deleteItem(item.id)} type="button">
+                        <button onClick={() => deleteItem(item.id, item.name)} type="button">
                           Remover
                         </button>
                       </div>
