@@ -68,6 +68,23 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function readMenuForMutation() {
+  for (let attempt = 1; attempt <= mutationMaxAttempts; attempt += 1) {
+    try {
+      const menu = await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true });
+      return menu.map((item) => normalizeMenuItem(item));
+    } catch {
+      if (attempt === mutationMaxAttempts) {
+        throw new Error("Falha ao ler dados persistidos no Blob.");
+      }
+
+      await wait(mutationRetryDelayMs);
+    }
+  }
+
+  return [];
+}
+
 async function ensureDataFiles() {
   await mkdir(dataDir, { recursive: true });
 
@@ -189,9 +206,7 @@ export async function getMenuItems() {
 }
 
 export async function addMenuItem(input: Omit<MenuItem, "id">) {
-  const menu = (await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true })).map((item) =>
-    normalizeMenuItem(item)
-  );
+  const menu = await readMenuForMutation();
   const newItem = normalizeMenuItem({
     ...input,
     id: randomUUID()
@@ -203,9 +218,7 @@ export async function addMenuItem(input: Omit<MenuItem, "id">) {
 }
 
 export async function updateMenuItem(id: string, updates: Partial<Omit<MenuItem, "id">>) {
-  const menu = (await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true })).map((item) =>
-    normalizeMenuItem(item)
-  );
+  const menu = await readMenuForMutation();
   const index = menu.findIndex((item) => item.id === id);
 
   if (index === -1) {
@@ -230,9 +243,7 @@ export async function updateMenuItem(id: string, updates: Partial<Omit<MenuItem,
 
 export async function deleteMenuItem(id: string) {
   for (let attempt = 1; attempt <= mutationMaxAttempts; attempt += 1) {
-    const menu = (await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true })).map((item) =>
-      normalizeMenuItem(item)
-    );
+    const menu = await readMenuForMutation();
     const index = menu.findIndex((item) => item.id === id);
 
     if (index === -1) {
@@ -247,9 +258,7 @@ export async function deleteMenuItem(id: string) {
     menu.splice(index, 1);
     await writeJsonFile(menuPath, menu);
 
-    const verification = (await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true })).map((item) =>
-      normalizeMenuItem(item)
-    );
+    const verification = await readMenuForMutation();
 
     if (!verification.some((item) => item.id === id)) {
       return true;
