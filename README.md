@@ -30,6 +30,7 @@ ADMIN_USERNAME=admin_dodo
 ADMIN_PASSWORD=TroqueAgora@123
 SESSION_SECRET=seu-segredo-forte
 BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxx
+BLOB_PUBLIC_MENU_URL=https://seu-store-id.public.blob.vercel-storage.com/catalog/menu.json
 ```
 
 Essas variaveis ja estao fora do Git via `.gitignore`.
@@ -53,6 +54,7 @@ Os dados sao salvos em:
 - `data/orders.json`
 
 Para deploy no Vercel, configure `BLOB_READ_WRITE_TOKEN` para persistir catalogo e pedidos entre funcoes serverless.
+Configure tambem `BLOB_PUBLIC_MENU_URL` com a URL publica de `catalog/menu.json` do seu Blob.
 Sem esse token em producao, o admin nao consegue salvar alteracoes de forma duravel.
 
 ## 5) Deploy no Vercel
@@ -64,4 +66,5 @@ Sem esse token em producao, o admin nao consegue salvar alteracoes de forma dura
    - `ADMIN_PASSWORD`
    - `SESSION_SECRET`
    - `BLOB_READ_WRITE_TOKEN`
+   - `BLOB_PUBLIC_MENU_URL`
 4. Deploy.

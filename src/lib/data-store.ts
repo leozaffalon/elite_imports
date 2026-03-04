@@ -112,18 +112,49 @@ function getBlobPathForFile(filePath: string) {
   return null;
 }
 
+function getBlobPublicUrl(blobPath: string) {
+  if (blobPath === blobMenuPath) {
+    return process.env.BLOB_PUBLIC_MENU_URL;
+  }
+
+  if (blobPath === blobOrdersPath) {
+    return process.env.BLOB_PUBLIC_ORDERS_URL;
+  }
+
+  return undefined;
+}
+
 async function readBlobJson<T>(blobPath: string, token: string) {
-  const result = await getBlob(blobPath, { access: "public", token });
-  if (!result || result.statusCode !== 200 || !result.stream) {
-    return null;
-  }
+  try {
+    const result = await getBlob(blobPath, { access: "public", token });
+    if (!result || result.statusCode !== 200 || !result.stream) {
+      return null;
+    }
 
-  const raw = await new Response(result.stream).text();
-  if (!raw) {
-    return null;
-  }
+    const raw = await new Response(result.stream).text();
+    if (!raw) {
+      return null;
+    }
 
-  return JSON.parse(raw) as T;
+    return JSON.parse(raw) as T;
+  } catch {
+    const publicUrl = getBlobPublicUrl(blobPath);
+    if (!publicUrl) {
+      throw new Error("Falha ao ler Blob e URL publica nao configurada.");
+    }
+
+    const response = await fetch(publicUrl, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Falha ao ler Blob publico (${response.status}).`);
+    }
+
+    const raw = await response.text();
+    if (!raw) {
+      return null;
+    }
+
+    return JSON.parse(raw) as T;
+  }
 }
 
 async function writeBlobJson<T>(blobPath: string, data: T, token: string) {
