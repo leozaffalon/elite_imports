@@ -9,8 +9,8 @@ const menuPath = path.join(dataDir, "menu.json");
 const ordersPath = path.join(dataDir, "orders.json");
 const blobMenuPath = "catalog/menu.json";
 const blobOrdersPath = "catalog/orders.json";
-const mutationRetryDelayMs = 350;
-const mutationMaxAttempts = 6;
+const mutationRetryDelayMs = 500;
+const mutationMaxAttempts = 30;
 
 const initialMenu: MenuItem[] = [];
 
