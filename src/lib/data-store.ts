@@ -9,6 +9,8 @@ const menuPath = path.join(dataDir, "menu.json");
 const ordersPath = path.join(dataDir, "orders.json");
 const blobMenuPath = "catalog/menu.json";
 const blobOrdersPath = "catalog/orders.json";
+const mutationRetryDelayMs = 350;
+const mutationMaxAttempts = 6;
 
 const initialMenu: MenuItem[] = [];
 
@@ -60,6 +62,10 @@ function normalizeMenuItem(item: Partial<MenuItem> & { id?: string }): MenuItem 
     featured: Boolean(item.featured),
     available: item.available ?? true
   };
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function ensureDataFiles() {
@@ -223,18 +229,38 @@ export async function updateMenuItem(id: string, updates: Partial<Omit<MenuItem,
 }
 
 export async function deleteMenuItem(id: string) {
-  const menu = (await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true })).map((item) =>
-    normalizeMenuItem(item)
-  );
-  const index = menu.findIndex((item) => item.id === id);
+  for (let attempt = 1; attempt <= mutationMaxAttempts; attempt += 1) {
+    const menu = (await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true })).map((item) =>
+      normalizeMenuItem(item)
+    );
+    const index = menu.findIndex((item) => item.id === id);
 
-  if (index === -1) {
-    return false;
+    if (index === -1) {
+      if (attempt === mutationMaxAttempts) {
+        return false;
+      }
+
+      await wait(mutationRetryDelayMs);
+      continue;
+    }
+
+    menu.splice(index, 1);
+    await writeJsonFile(menuPath, menu);
+
+    const verification = (await readJsonFile<MenuItem[]>(menuPath, [], { strictBlobRead: true })).map((item) =>
+      normalizeMenuItem(item)
+    );
+
+    if (!verification.some((item) => item.id === id)) {
+      return true;
+    }
+
+    if (attempt < mutationMaxAttempts) {
+      await wait(mutationRetryDelayMs);
+    }
   }
 
-  menu.splice(index, 1);
-  await writeJsonFile(menuPath, menu);
-  return true;
+  return false;
 }
 
 export async function createOrder(payload: Omit<Order, "id" | "createdAt" | "status">) {
