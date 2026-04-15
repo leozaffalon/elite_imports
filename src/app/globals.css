@@ -1056,8 +1056,17 @@ select:focus {
   }
 
   .ea-benefit-item {
-    min-width: 210px;
+    min-width: 180px;
+    padding: 0.4rem 0.5rem;
     scroll-snap-align: start;
+  }
+
+  .ea-benefit-item strong {
+    font-size: 0.55rem;
+  }
+
+  .ea-benefit-item span {
+    font-size: 0.62rem;
   }
 
   .ea-slide-image {
