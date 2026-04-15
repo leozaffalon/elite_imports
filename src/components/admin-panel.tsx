@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MenuCategory, MenuItem } from "@/lib/types";
+import { MenuCategory, MenuItem, SiteSettings } from "@/lib/types";
 
 type MenuInput = {
   name: string;
@@ -18,6 +18,10 @@ type MenuInput = {
 
 const categories: MenuCategory[] = ["Masculino", "Feminino", "Unissex", "Kits"];
 const adminCurrency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const controlClass = "form-control form-control-sm";
+const selectClass = "form-select form-select-sm";
+const defaultHomeImage = "/images/official/elite-aromas-ea-logo.svg";
+const maxHomeImages = 5;
 
 const emptyItem: MenuInput = {
   name: "",
@@ -29,6 +33,21 @@ const emptyItem: MenuInput = {
   featured: false,
   available: true
 };
+
+function sanitizeHomeImages(input: unknown): string[] {
+  const values = Array.isArray(input)
+    ? input.filter((item): item is string => typeof item === "string").map((item) => item.trim())
+    : [];
+  const sanitized = [...new Set(values.filter((item) => item.length > 0))].slice(0, maxHomeImages);
+  return sanitized.length > 0 ? sanitized : [defaultHomeImage];
+}
+
+function mergeHomeImages(primary: unknown, list: unknown): string[] {
+  const fromPrimary =
+    typeof primary === "string" && primary.trim().length > 0 ? [primary.trim()] : [];
+  const fromList = Array.isArray(list) ? list : [];
+  return sanitizeHomeImages([...fromPrimary, ...fromList]);
+}
 
 export default function AdminPanel() {
   const [username, setUsername] = useState("");
@@ -43,12 +62,16 @@ export default function AdminPanel() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingDraft, setEditingDraft] = useState<MenuInput>(emptyItem);
   const [uploadStatus, setUploadStatus] = useState<string>("");
+  const [homeImages, setHomeImages] = useState<string[]>([defaultHomeImage]);
+  const [homeImageInput, setHomeImageInput] = useState<string>("");
+  const [homeUploadStatus, setHomeUploadStatus] = useState<string>("");
+  const [homeSaving, setHomeSaving] = useState(false);
 
   const orderedMenu = useMemo(() => {
     return [...menu].sort((a, b) => Number(b.featured) - Number(a.featured));
   }, [menu]);
 
-  async function refreshMenu() {
+  const refreshMenu = useCallback(async () => {
     const response = await fetch("/api/admin/menu", { cache: "no-store" });
     const payload = (await response.json().catch(() => null)) as MenuItem[] | { error?: string } | null;
 
@@ -70,7 +93,35 @@ export default function AdminPanel() {
 
     setMenu(payload);
     setLoggedIn(true);
-  }
+  }, []);
+
+  const refreshSettings = useCallback(async () => {
+    const response = await fetch("/api/admin/settings", { cache: "no-store" });
+    const payload = (await response.json().catch(() => null)) as SiteSettings | { error?: string } | null;
+
+    if (response.status === 401) {
+      setLoggedIn(false);
+      return;
+    }
+
+    if (!response.ok) {
+      const error = payload && !("homeImage" in payload) ? payload.error : undefined;
+      setMessage(error ?? "Nao foi possivel carregar configuracoes da home.");
+      return;
+    }
+
+    if (!payload || typeof payload !== "object") {
+      setMessage("Configuracao da home invalida.");
+      return;
+    }
+
+    const parsed = mergeHomeImages(
+      "homeImage" in payload ? payload.homeImage : undefined,
+      "homeImages" in payload ? payload.homeImages : undefined
+    );
+    setHomeImages(parsed);
+    setHomeImageInput("");
+  }, []);
 
   async function waitForCatalogSync(itemId: string) {
     for (let attempt = 0; attempt < 8; attempt += 1) {
@@ -88,8 +139,8 @@ export default function AdminPanel() {
   }
 
   useEffect(() => {
-    refreshMenu().catch(() => setLoggedIn(false));
-  }, []);
+    Promise.all([refreshMenu(), refreshSettings()]).catch(() => setLoggedIn(false));
+  }, [refreshMenu, refreshSettings]);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -113,7 +164,7 @@ export default function AdminPanel() {
       }
 
       setPassword("");
-      await refreshMenu();
+      await Promise.all([refreshMenu(), refreshSettings()]);
       setMessage("Login realizado com sucesso.");
     } catch {
       setMessage("Erro de conexao ao tentar autenticar.");
@@ -126,7 +177,110 @@ export default function AdminPanel() {
     await fetch("/api/logout", { method: "POST" });
     setLoggedIn(false);
     setMenu([]);
+    setHomeImages([defaultHomeImage]);
+    setHomeImageInput("");
+    setHomeUploadStatus("");
     setMessage("Sessao encerrada.");
+  }
+
+  function addHomeImageByUrl(rawUrl: string) {
+    const nextUrl = rawUrl.trim();
+    if (!nextUrl) {
+      setHomeUploadStatus("Informe uma URL valida.");
+      return;
+    }
+
+    setHomeImages((prev) => {
+      const previousLength = prev.length;
+      const merged = sanitizeHomeImages([...prev, nextUrl]);
+      const wasDuplicate = prev.includes(nextUrl);
+      const wasTrimmed = merged.length === previousLength && !wasDuplicate;
+
+      if (wasDuplicate) {
+        setHomeUploadStatus("Imagem ja adicionada.");
+      } else if (wasTrimmed || previousLength >= maxHomeImages) {
+        setHomeUploadStatus(`Limite de ${maxHomeImages} imagens atingido.`);
+      } else {
+        setHomeUploadStatus("Imagem adicionada. Clique em salvar para publicar.");
+      }
+      return merged;
+    });
+    setHomeImageInput("");
+  }
+
+  function removeHomeImage(index: number) {
+    setHomeImages((prev) => {
+      const next = prev.filter((_, currentIndex) => currentIndex !== index);
+      return next.length > 0 ? next : [defaultHomeImage];
+    });
+  }
+
+  function makeCoverHomeImage(index: number) {
+    setHomeImages((prev) => {
+      const selected = prev[index];
+      if (!selected) return prev;
+      return [selected, ...prev.filter((_, currentIndex) => currentIndex !== index)];
+    });
+  }
+
+  async function handleSaveHomeImages() {
+    if (homeImages.length === 0) {
+      setMessage("Adicione ao menos uma imagem para a home.");
+      return;
+    }
+
+    setHomeSaving(true);
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ homeImages: homeImages.slice(0, maxHomeImages) })
+      });
+      const payload = (await response.json().catch(() => ({}))) as SiteSettings & { error?: string };
+
+      if (!response.ok) {
+        setMessage(payload.error ?? "Nao foi possivel salvar imagem da home.");
+        return;
+      }
+
+      const next = mergeHomeImages(payload.homeImage, payload.homeImages);
+      setHomeImages(next);
+      setHomeUploadStatus("");
+      setMessage("Imagens da home atualizadas.");
+    } catch {
+      setMessage("Erro de conexao ao salvar configuracao da home.");
+    } finally {
+      setHomeSaving(false);
+    }
+  }
+
+  async function handleHomeImageUpload(file: File | undefined) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setHomeUploadStatus("Envie apenas arquivos de imagem.");
+      return;
+    }
+
+    setHomeUploadStatus("Enviando imagem da home...");
+    try {
+      const url = await uploadSingleImage(file);
+      setHomeImages((prev) => {
+        const merged = sanitizeHomeImages([...prev, url]);
+        if (prev.length >= maxHomeImages) {
+          setHomeUploadStatus(`Imagem enviada, mas o limite de ${maxHomeImages} foi mantido.`);
+        } else {
+          setHomeUploadStatus("Imagem enviada. Clique em salvar para publicar.");
+        }
+        return merged;
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Falha ao enviar imagem da home.";
+      setHomeUploadStatus(message);
+    }
   }
 
   async function uploadSingleImage(file: File) {
@@ -290,15 +444,16 @@ export default function AdminPanel() {
 
   if (!loggedIn) {
     return (
-      <main className="admin-shell">
-        <section className="admin-login-card reveal-up">
+      <main className="admin-shell container-fluid py-3">
+        <section className="admin-login-card reveal-up shadow-sm">
           <h1>Admin | Elite Aromas</h1>
           <p>Entre com as credenciais definidas no arquivo .env.local</p>
 
-          <form onSubmit={handleLogin}>
-            <label>
+          <form className="d-grid gap-3" onSubmit={handleLogin}>
+            <label className="form-label d-grid gap-1 mb-0">
               Usuario
               <input
+                className={controlClass}
                 onChange={(event) => setUsername(event.target.value)}
                 required
                 type="text"
@@ -306,17 +461,18 @@ export default function AdminPanel() {
               />
             </label>
 
-            <label>
+            <label className="form-label d-grid gap-1 mb-0">
               Senha
-              <div className="password-field">
+              <div className="password-field input-group">
                 <input
+                  className={controlClass}
                   onChange={(event) => setPassword(event.target.value)}
                   required
                   type={showPassword ? "text" : "password"}
                   value={password}
                 />
                 <button
-                  className="secondary-btn password-toggle"
+                  className="secondary-btn password-toggle btn btn-outline-dark btn-sm"
                   onClick={() => setShowPassword((prev) => !prev)}
                   type="button"
                 >
@@ -325,7 +481,7 @@ export default function AdminPanel() {
               </div>
             </label>
 
-            <button className="primary-btn" disabled={loading} type="submit">
+            <button className="primary-btn btn btn-warning text-dark fw-semibold" disabled={loading} type="submit">
               {loading ? "Entrando..." : "Entrar"}
             </button>
           </form>
@@ -341,24 +497,116 @@ export default function AdminPanel() {
   }
 
   return (
-    <main className="admin-shell">
-      <header className="admin-topbar reveal-up">
+    <main className="admin-shell container-fluid py-3">
+      <header className="admin-topbar reveal-up shadow-sm">
         <h1>Painel administrativo</h1>
         <div className="admin-actions">
-          <Link href="/">Ver loja</Link>
-          <button onClick={handleLogout} type="button">
+          <Link className="btn btn-outline-dark" href="/">
+            Ver loja
+          </Link>
+          <button className="btn btn-warning text-dark fw-semibold" onClick={handleLogout} type="button">
             Sair
           </button>
         </div>
       </header>
 
-      <section className="admin-grid">
-        <article className="admin-card reveal-up">
-          <h2>Novo perfume</h2>
+      <section className="admin-grid row g-3">
+        <article className="admin-card reveal-up col-12 col-xl-5 shadow-sm">
+          <h2>Imagens da home (carrossel)</h2>
+          <p className="muted-text">
+            Adicione ate {maxHomeImages} imagens para intercalar automaticamente no topo da home.
+          </p>
+
+          <div className="admin-home-settings">
+            <div className="home-image-preview">
+              <Image
+                alt="Preview da imagem principal da home"
+                height={160}
+                src={homeImages[0] || defaultHomeImage}
+                width={420}
+              />
+            </div>
+            <span className="muted-text">
+              {homeImages.length}/{maxHomeImages} imagens no carrossel
+            </span>
+
+            <label className="form-label d-grid gap-1 mb-0">
+              URL de imagem
+              <div className="input-group">
+                <input
+                  className={controlClass}
+                  onChange={(event) => setHomeImageInput(event.target.value)}
+                  placeholder="https://... ou /images/..."
+                  type="text"
+                  value={homeImageInput}
+                />
+                <button
+                  className="btn btn-outline-dark btn-sm"
+                  onClick={() => addHomeImageByUrl(homeImageInput)}
+                  type="button"
+                >
+                  Adicionar
+                </button>
+              </div>
+            </label>
+
+            <label className="form-label d-grid gap-1 mb-0">
+              Upload de imagem da home
+              <input
+                accept="image/*"
+                className={controlClass}
+                onChange={(event) => void handleHomeImageUpload(event.target.files?.[0])}
+                type="file"
+              />
+            </label>
+
+            {homeImages.length > 0 && (
+              <div className="image-list">
+                {homeImages.map((image, index) => (
+                  <div className="image-list-item" key={`${image}-${index}`}>
+                    <Image alt={`Home ${index + 1}`} height={72} src={image} width={72} />
+                    <span>{index === 0 ? "Capa atual" : `Slide ${index + 1}`}</span>
+                    <div className="admin-inline-grid compact">
+                      <button
+                        className="btn btn-outline-dark btn-sm"
+                        onClick={() => makeCoverHomeImage(index)}
+                        type="button"
+                      >
+                        {index === 0 ? "Capa" : "Definir capa"}
+                      </button>
+                      <button
+                        className="btn btn-outline-danger btn-sm"
+                        onClick={() => removeHomeImage(index)}
+                        type="button"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              className="btn btn-warning text-dark fw-semibold"
+              disabled={homeSaving}
+              onClick={handleSaveHomeImages}
+              type="button"
+            >
+              {homeSaving ? "Salvando..." : "Salvar imagens da home"}
+            </button>
+            {homeUploadStatus && <p className="feedback-text">{homeUploadStatus}</p>}
+          </div>
+
+          <hr className="admin-divider" />
+
+          <h2>Novo anuncio</h2>
+          <p className="muted-text">Adicione um novo anuncio de perfume no catalogo da Elite Aromas.</p>
           <form className="admin-form" onSubmit={handleCreate}>
-            <label>
+            <label className="form-label d-grid gap-1 mb-0">
               Nome
               <input
+                className={controlClass}
                 onChange={(event) => setNewItem((prev) => ({ ...prev, name: event.target.value }))}
                 required
                 type="text"
@@ -366,9 +614,10 @@ export default function AdminPanel() {
               />
             </label>
 
-            <label>
+            <label className="form-label d-grid gap-1 mb-0">
               Descricao
               <textarea
+                className={controlClass}
                 onChange={(event) =>
                   setNewItem((prev) => ({ ...prev, description: event.target.value }))
                 }
@@ -378,9 +627,10 @@ export default function AdminPanel() {
               />
             </label>
 
-            <label>
+            <label className="form-label d-grid gap-1 mb-0">
               Preco
               <input
+                className={controlClass}
                 min={0}
                 onChange={(event) =>
                   setNewItem((prev) => ({ ...prev, price: Number(event.target.value) }))
@@ -392,7 +642,7 @@ export default function AdminPanel() {
               />
             </label>
 
-            <label>
+            <label className="form-label d-grid gap-1 mb-0">
               Imagens do produto (arraste uma ou mais)
               <div
                 className="dropzone"
@@ -453,6 +703,7 @@ export default function AdminPanel() {
                     <Image alt={`Imagem ${index + 1}`} height={72} src={image} width={72} />
                     <span>{index === 0 ? "Capa" : `Imagem ${index + 1}`}</span>
                     <button
+                      className="btn btn-outline-danger btn-sm"
                       onClick={() =>
                         setNewItem((prev) => {
                           const nextImages = prev.images.filter(
@@ -474,9 +725,10 @@ export default function AdminPanel() {
               </div>
             )}
 
-            <label>
+            <label className="form-label d-grid gap-1 mb-0">
               Categoria
               <select
+                className={selectClass}
                 onChange={(event) =>
                   setNewItem((prev) => ({ ...prev, category: event.target.value as MenuCategory }))
                 }
@@ -490,37 +742,40 @@ export default function AdminPanel() {
               </select>
             </label>
 
-            <label className="check-row">
+            <label className="check-row form-check">
               <input
+                className="form-check-input"
                 checked={newItem.featured}
                 onChange={(event) =>
                   setNewItem((prev) => ({ ...prev, featured: event.target.checked }))
                 }
                 type="checkbox"
               />
-              Mostrar na vitrine
+              <span className="form-check-label">Mostrar na vitrine</span>
             </label>
 
-            <label className="check-row">
+            <label className="check-row form-check">
               <input
+                className="form-check-input"
                 checked={newItem.available}
                 onChange={(event) =>
                   setNewItem((prev) => ({ ...prev, available: event.target.checked }))
                 }
                 type="checkbox"
               />
-              Disponivel para venda
+              <span className="form-check-label">Disponivel para venda</span>
             </label>
 
-            <button className="primary-btn" type="submit">
-              Adicionar item
+            <button className="primary-btn btn btn-warning text-dark fw-semibold" type="submit">
+              Adicionar anuncio
             </button>
             {uploadStatus && <p className="feedback-text">{uploadStatus}</p>}
           </form>
         </article>
 
-        <article className="admin-card reveal-up">
-          <h2>Catalogo atual</h2>
+        <article className="admin-card reveal-up col-12 col-xl-7 shadow-sm">
+          <h2>Anuncios atuais</h2>
+          <p className="muted-text">Edite, atualize ou remova anuncios de perfumes em tempo real.</p>
 
           <div className="admin-menu-list">
             {orderedMenu.map((item) => {
@@ -531,6 +786,7 @@ export default function AdminPanel() {
                   {isEditing ? (
                     <>
                       <input
+                        className={controlClass}
                         onChange={(event) =>
                           setEditingDraft((prev) => ({ ...prev, name: event.target.value }))
                         }
@@ -538,6 +794,7 @@ export default function AdminPanel() {
                         value={editingDraft.name}
                       />
                       <textarea
+                        className={controlClass}
                         onChange={(event) =>
                           setEditingDraft((prev) => ({ ...prev, description: event.target.value }))
                         }
@@ -546,6 +803,7 @@ export default function AdminPanel() {
                       />
                       <div className="admin-inline-grid">
                         <input
+                          className={controlClass}
                           min={0}
                           onChange={(event) =>
                             setEditingDraft((prev) => ({ ...prev, price: Number(event.target.value) }))
@@ -555,6 +813,7 @@ export default function AdminPanel() {
                           value={editingDraft.price}
                         />
                         <select
+                          className={selectClass}
                           onChange={(event) =>
                             setEditingDraft((prev) => ({
                               ...prev,
@@ -626,6 +885,7 @@ export default function AdminPanel() {
                               <Image alt={`Imagem ${index + 1}`} height={72} src={image} width={72} />
                               <span>{index === 0 ? "Capa" : `Imagem ${index + 1}`}</span>
                               <button
+                                className="btn btn-outline-danger btn-sm"
                                 onClick={() =>
                                   setEditingDraft((prev) => {
                                     const nextImages = prev.images.filter(
@@ -648,33 +908,35 @@ export default function AdminPanel() {
                       )}
 
                       <div className="admin-inline-grid">
-                        <label className="check-row">
+                        <label className="check-row form-check">
                           <input
+                            className="form-check-input"
                             checked={editingDraft.featured}
                             onChange={(event) =>
                               setEditingDraft((prev) => ({ ...prev, featured: event.target.checked }))
                             }
                             type="checkbox"
                           />
-                          Destaque
+                          <span className="form-check-label">Destaque</span>
                         </label>
 
-                        <label className="check-row">
+                        <label className="check-row form-check">
                           <input
+                            className="form-check-input"
                             checked={editingDraft.available}
                             onChange={(event) =>
                               setEditingDraft((prev) => ({ ...prev, available: event.target.checked }))
                             }
                             type="checkbox"
                           />
-                          Disponivel
+                          <span className="form-check-label">Disponivel</span>
                         </label>
                       </div>
                       <div className="admin-inline-grid">
-                        <button onClick={() => saveEdit(item.id)} type="button">
+                        <button className="btn btn-warning text-dark fw-semibold" onClick={() => saveEdit(item.id)} type="button">
                           Salvar
                         </button>
-                        <button onClick={() => setEditingId(null)} type="button">
+                        <button className="btn btn-outline-dark" onClick={() => setEditingId(null)} type="button">
                           Cancelar
                         </button>
                       </div>
@@ -692,10 +954,10 @@ export default function AdminPanel() {
                         <span>{item.available ? "Disponivel" : "Indisponivel"}</span>
                       </div>
                       <div className="admin-inline-grid">
-                        <button onClick={() => startEditing(item)} type="button">
+                        <button className="btn btn-outline-dark" onClick={() => startEditing(item)} type="button">
                           Editar
                         </button>
-                        <button onClick={() => deleteItem(item.id, item.name)} type="button">
+                        <button className="btn btn-warning text-dark fw-semibold" onClick={() => deleteItem(item.id, item.name)} type="button">
                           Remover
                         </button>
                       </div>

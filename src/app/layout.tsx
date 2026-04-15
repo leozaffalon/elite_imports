@@ -1,24 +1,12 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Manrope } from "next/font/google";
 import "./globals.css";
-
-const headingFont = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-heading",
-  weight: "700"
-});
-
-const bodyFont = Manrope({
-  subsets: ["latin"],
-  variable: "--font-body"
-});
 
 export const metadata: Metadata = {
   title: "Elite Aromas | Perfumes Importados Originais",
   description:
     "Elite Aromas: perfumes importados originais, curadoria premium e atendimento oficial via WhatsApp.",
   applicationName: "Elite Aromas",
-  metadataBase: new URL("https://elite-imports.vercel.app")
+  metadataBase: new URL("https://elitearomas.vercel.app")
 };
 
 export default function RootLayout({
@@ -28,7 +16,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${headingFont.variable} ${bodyFont.variable}`}>{children}</body>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }

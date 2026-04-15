@@ -2,34 +2,30 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MenuCategory, MenuItem } from "@/lib/types";
-
-type CartItem = {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-};
-
-type CustomerForm = {
-  name: string;
-  phone: string;
-  address: string;
-  notes: string;
-};
 
 type ShopPageProps = {
   initialMenu: MenuItem[];
+  initialHomeImages: string[];
 };
 
-const categories: Array<"Todos" | MenuCategory> = ["Todos", "Masculino", "Feminino", "Unissex", "Kits"];
+type TabKey = "Todos" | "Masculino" | "Feminino";
 
-const trustPills = [
-  "Perfumes importados e originais",
-  "Lote e autenticidade verificados",
-  "Atendimento humano via WhatsApp",
-  "Entrega nacional com suporte"
+const tabs: { key: TabKey; label: string }[] = [
+  { key: "Masculino", label: "Decants Masculinos" },
+  { key: "Feminino", label: "Decants Femininos" },
+  { key: "Todos", label: "Todos os Decants" }
+];
+const defaultHomeImage = "/images/official/elite-aromas-ea-logo.svg";
+
+const benefits = [
+  { title: "Envio em 24h", subtitle: "Postagem rapida" },
+  { title: "5% OFF no Pix", subtitle: "Desconto automatico" },
+  { title: "6x sem juros", subtitle: "No cartao" },
+  { title: "Compra segura", subtitle: "Ambiente protegido" },
+  { title: "Frete gratis", subtitle: "Acima de R$199,90" },
+  { title: "Originais", subtitle: "100% autenticados" }
 ];
 
 const currency = new Intl.NumberFormat("pt-BR", {
@@ -37,308 +33,333 @@ const currency = new Intl.NumberFormat("pt-BR", {
   currency: "BRL"
 });
 
-export default function ShopPage({ initialMenu }: ShopPageProps) {
+function sanitizeHomeImages(input: unknown): string[] {
+  const values = Array.isArray(input)
+    ? input.filter((item): item is string => typeof item === "string").map((item) => item.trim())
+    : [];
+
+  const sanitized = [...new Set(values.filter((item) => item.length > 0))].slice(0, 5);
+  return sanitized.length > 0 ? sanitized : [defaultHomeImage];
+}
+
+export default function ShopPage({ initialMenu, initialHomeImages }: ShopPageProps) {
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenu);
-  const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>("Todos");
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [customer, setCustomer] = useState<CustomerForm>({
-    name: "",
-    phone: "",
-    address: "",
-    notes: ""
-  });
-  const [feedback, setFeedback] = useState("");
+  const [homeImages, setHomeImages] = useState<string[]>(sanitizeHomeImages(initialHomeImages));
+  const [homeImageIndex, setHomeImageIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<TabKey>("Masculino");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const availableTabs = useMemo(() => {
+    const hasMasculino = menuItems.some((item) => item.category === "Masculino");
+    const hasFeminino = menuItems.some((item) => item.category === "Feminino");
+
+    return tabs.filter((tab) => {
+      if (tab.key === "Masculino") return hasMasculino;
+      if (tab.key === "Feminino") return hasFeminino;
+      return true;
+    });
+  }, [menuItems]);
 
   useEffect(() => {
     fetch("/api/menu", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) return;
         const payload = (await response.json()) as MenuItem[];
+
         if (Array.isArray(payload)) {
           setMenuItems(payload);
         }
       })
       .catch(() => {
-        // Mantem o catalogo inicial caso a atualizacao em cliente falhe.
+        // Mantem o catalogo inicial caso o fetch no cliente falhe.
       });
   }, []);
 
-  const featured = useMemo(() => menuItems.filter((item) => item.featured).slice(0, 3), [menuItems]);
+  useEffect(() => {
+    fetch("/api/settings", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const payload = (await response.json()) as { homeImage?: string; homeImages?: string[] };
+        const candidateImages = [
+          ...(Array.isArray(payload.homeImages) ? payload.homeImages : []),
+          ...(typeof payload.homeImage === "string" ? [payload.homeImage] : [])
+        ];
+        const nextImages = sanitizeHomeImages(candidateImages);
+        setHomeImages(nextImages);
+        setHomeImageIndex(0);
+      })
+      .catch(() => {
+        // Mantem a imagem inicial caso o fetch de configuracao falhe.
+      });
+  }, []);
 
-  const menu = useMemo(() => {
-    return menuItems.filter((item) => {
-      if (activeCategory === "Todos") {
-        return true;
-      }
-
-      return item.category === activeCategory;
-    });
-  }, [activeCategory, menuItems]);
-
-  const subtotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  }, [cart]);
-
-  function addToCart(item: MenuItem) {
-    setFeedback("");
-
-    setCart((prev) => {
-      const exists = prev.find((cartItem) => cartItem.id === item.id);
-
-      if (exists) {
-        return prev.map((cartItem) =>
-          cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
-        );
-      }
-
-      return [...prev, { id: item.id, name: item.name, price: item.price, quantity: 1 }];
-    });
-  }
-
-  function changeQuantity(id: string, delta: number) {
-    setCart((prev) =>
-      prev
-        .map((item) => (item.id === id ? { ...item, quantity: item.quantity + delta } : item))
-        .filter((item) => item.quantity > 0)
-    );
-  }
-
-  function handleCheckout(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (cart.length === 0) {
-      setFeedback("Adicione pelo menos um perfume ao carrinho.");
+  useEffect(() => {
+    if (homeImages.length <= 1) {
+      setHomeImageIndex(0);
       return;
     }
 
-    if (!customer.name || !customer.phone || !customer.address) {
-      setFeedback("Preencha nome, telefone e endereco para continuar.");
-      return;
+    const timer = window.setInterval(() => {
+      setHomeImageIndex((current) => (current + 1) % homeImages.length);
+    }, 3200);
+
+    return () => window.clearInterval(timer);
+  }, [homeImages]);
+
+  const visibleItems = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    const filtered = menuItems.filter((item) => {
+      const tabMatch = activeTab === "Todos" || item.category === activeTab;
+      const searchMatch =
+        query.length === 0 ||
+        item.name.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query);
+
+      return tabMatch && searchMatch;
+    });
+
+    return filtered.sort((a, b) => Number(b.featured) - Number(a.featured));
+  }, [activeTab, menuItems, searchQuery]);
+
+  const kitItems = useMemo(() => menuItems.filter((item) => item.category === "Kits").slice(0, 8), [menuItems]);
+
+  useEffect(() => {
+    const tabStillExists = availableTabs.some((tab) => tab.key === activeTab);
+    if (!tabStillExists) {
+      setActiveTab(availableTabs[0]?.key ?? "Todos");
     }
+  }, [activeTab, availableTabs]);
 
-    const orderLines = cart
-      .map(
-        (item, index) =>
-          `${index + 1}. Produto: ${item.name}\nQuantidade: ${item.quantity}\nValor unitario: ${currency.format(
-            item.price
-          )}`
-      )
-      .join("\n\n");
+  function getCompareAt(price: number) {
+    return price * 1.32;
+  }
 
+  function getDiscount(price: number) {
+    const compareAt = getCompareAt(price);
+    return Math.max(8, Math.round((1 - price / compareAt) * 100));
+  }
+
+  function getPixPrice(price: number) {
+    return price * 0.95;
+  }
+
+  function getInstallment(price: number) {
+    return price / 6;
+  }
+
+  function handleQuickBuy(item: MenuItem) {
     const message = [
-      "Ola, gostaria de adquirir os perfumes abaixo:",
+      "Ola! Tenho interesse neste perfume da Elite Aromas:",
       "",
-      orderLines,
+      `Produto: ${item.name}`,
+      `Categoria: ${item.category}`,
+      `Preco: ${currency.format(item.price)}`,
+      `Pix: ${currency.format(getPixPrice(item.price))}`,
       "",
-      `Total estimado: ${currency.format(subtotal)}`,
-      "",
-      "Dados para atendimento:",
-      `Nome: ${customer.name}`,
-      `Telefone: ${customer.phone}`,
-      `Endereco: ${customer.address}`,
-      `Observacoes: ${customer.notes || "Nenhuma"}`
+      "Pode me enviar mais detalhes?"
     ].join("\n");
 
     window.open(`https://wa.me/5519992572980?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
-    setFeedback("WhatsApp aberto com a sua solicitacao preenchida.");
+  }
+
+  function scrollToCatalog() {
+    document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function scrollToKits() {
+    document.getElementById("kits")?.scrollIntoView({ behavior: "smooth" });
   }
 
   return (
-    <div className="animated-shell">
-      <div className="bg-orb orb-1" />
-      <div className="bg-orb orb-2" />
-      <div className="bg-orb orb-3" />
+    <div className="ea-page">
+      <div className="ea-announcement">ELITE AROMAS - DECANTS E PERFUMES IMPORTADOS ORIGINAIS</div>
 
-      <header className="topbar container">
-        <div className="brand">
-          <span className="brand-mark">EA</span>
-          <span>Elite Aromas</span>
+      <header className="ea-header">
+        <div className="container ea-header-inner">
+          <div className="ea-brand-wrap">
+            <button aria-label="Abrir menu" className="ea-menu-btn" type="button">
+              <span />
+              <span />
+              <span />
+            </button>
+
+            <Link className="ea-brand" href="/">
+              Elite Aromas
+            </Link>
+          </div>
+
+          <nav className="ea-nav">
+            <a href="#catalogo">Catalogo</a>
+          </nav>
         </div>
-        <nav className="nav-links">
-          <a href="#catalogo">Catalogo</a>
-          <a href="#compra">Comprar</a>
-          <Link href="/admin">Admin</Link>
-        </nav>
       </header>
 
-      <main className="container page-flow">
-        <section className="hero">
-          <div className="hero-copy reveal-up">
-            <p className="kicker">Perfumaria de importados</p>
-            <h1>Fragrancias de grife com curadoria premium.</h1>
-            <p>
-              Inspirada na direcao artistica editorial de grandes maisons, a Elite Aromas entrega um
-              catalogo com autenticidade, suporte consultivo e atendimento direto.
-            </p>
-            <div className="hero-actions">
-              <button
-                className="primary-btn"
-                onClick={() => document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" })}
-                type="button"
-              >
-                Explorar perfumes
-              </button>
-            </div>
-          </div>
-
-          <div className="hero-image reveal-up">
-            <Image
-              src="/images/official/hero.png"
-              alt="Colecao de perfumes importados Elite Aromas"
-              width={900}
-              height={620}
-              priority
-            />
-          </div>
-        </section>
-
-        <section className="trust-strip reveal-up">
-          {trustPills.map((pill) => (
-            <div className="trust-pill" key={pill}>
-              {pill}
-            </div>
-          ))}
-        </section>
-
-        <section className="feature-panels">
-          {featured.map((item) => (
-            <article className="feature-card reveal-up" key={item.id}>
-              <span className="feature-tag">Selecao em destaque</span>
-              <h3>{item.name}</h3>
-              <p>{item.description}</p>
-              <strong>{currency.format(item.price)}</strong>
-            </article>
-          ))}
-        </section>
-
-        <section className="menu-section" id="catalogo">
-          <div className="menu-header">
-            <h2>Catalogo oficial</h2>
-            <p className="muted-text">Clique no produto para abrir a pagina completa com galeria e detalhes.</p>
-            <div className="category-tabs">
-              {categories.map((category) => (
-                <button
-                  className={category === activeCategory ? "tab-btn active" : "tab-btn"}
-                  key={category}
-                  onClick={() => setActiveCategory(category)}
-                  type="button"
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="menu-grid">
-            {menu.map((item) => (
-              <article className="menu-card reveal-up" key={item.id}>
-                <Link className="card-link" href={`/produtos/${item.id}`}>
-                  <div className="card-image-wrap">
-                    <Image src={item.image} alt={item.name} width={580} height={420} />
-                  </div>
-                  <div className="card-content">
-                    <div>
-                      <h3>{item.name}</h3>
-                      <p>{item.description}</p>
-                    </div>
-                    <div className="card-footer">
-                      <strong>{currency.format(item.price)}</strong>
-                      <span className="muted-text">Abrir pagina do produto</span>
-                    </div>
-                  </div>
-                </Link>
-
-                <div className="card-actions">
-                  <button
-                    className="secondary-btn"
-                    disabled={!item.available}
-                    onClick={() => addToCart(item)}
-                    type="button"
-                  >
-                    {item.available ? "Adicionar ao carrinho" : "Indisponivel"}
-                  </button>
+      <main>
+        <section className="ea-benefits-wrap">
+          <div className="container ea-benefits" role="list">
+            {benefits.map((benefit) => (
+              <article className="ea-benefit-item" key={benefit.title} role="listitem">
+                <div className="ea-benefit-icon" aria-hidden="true" />
+                <div>
+                  <strong>{benefit.title}</strong>
+                  <span>{benefit.subtitle}</span>
                 </div>
               </article>
             ))}
           </div>
         </section>
 
-        <section className="order-section" id="compra">
-          <div className="order-panel reveal-up">
-            <h2>Carrinho</h2>
-            {cart.length === 0 && <p>Seu carrinho esta vazio.</p>}
-            {cart.map((item) => (
-              <div className="cart-row" key={item.id}>
-                <div>
-                  <strong>{item.name}</strong>
-                  <p>{currency.format(item.price)} por unidade</p>
-                </div>
-                <div className="qty-controls">
-                  <button onClick={() => changeQuantity(item.id, -1)} type="button">
-                    -
-                  </button>
-                  <span>{item.quantity}</span>
-                  <button onClick={() => changeQuantity(item.id, 1)} type="button">
-                    +
-                  </button>
-                </div>
-              </div>
-            ))}
-            <div className="cart-total">
-              <span>Total estimado</span>
-              <strong>{currency.format(subtotal)}</strong>
+        <section className="container ea-slides">
+          <article className="ea-slide ea-slide-primary reveal-up">
+            <div className="ea-slide-container" style={{ transform: `translateX(-${homeImageIndex * 100}%)` }}>
+              {homeImages.map((image, index) => (
+                <Image
+                  key={image}
+                  alt={`Slide ${index + 1}`}
+                  className="ea-slide-image ea-slide-image-logo"
+                  height={720}
+                  priority={index === 0}
+                  src={image}
+                  width={1400}
+                />
+              ))}
             </div>
-            <p className="muted-text">A finalizacao do pedido acontece via atendimento oficial no WhatsApp.</p>
-          </div>
-
-          <form className="checkout-panel reveal-up" onSubmit={handleCheckout}>
-            <h2>Enviar solicitacao</h2>
-            <label>
-              Nome completo
-              <input
-                onChange={(event) => setCustomer((prev) => ({ ...prev, name: event.target.value }))}
-                required
-                type="text"
-                value={customer.name}
-              />
-            </label>
-
-            <label>
-              Telefone
-              <input
-                onChange={(event) => setCustomer((prev) => ({ ...prev, phone: event.target.value }))}
-                required
-                type="tel"
-                value={customer.phone}
-              />
-            </label>
-
-            <label>
-              Endereco de entrega
-              <input
-                onChange={(event) => setCustomer((prev) => ({ ...prev, address: event.target.value }))}
-                required
-                type="text"
-                value={customer.address}
-              />
-            </label>
-
-            <label>
-              Observacoes
-              <textarea
-                onChange={(event) => setCustomer((prev) => ({ ...prev, notes: event.target.value }))}
-                rows={3}
-                value={customer.notes}
-              />
-            </label>
-
-            <button className="primary-btn" type="submit">
-              Enviar para WhatsApp
-            </button>
-
-            {feedback && <p className="feedback-text">{feedback}</p>}
-          </form>
+            <div className="ea-slide-overlay">
+              <p>navegacao rapida</p>
+              <div className="ea-slide-actions">
+                <button className="ea-white-btn" onClick={scrollToCatalog} type="button">
+                  Conhecer Decants
+                </button>
+                <button className="ea-white-btn" onClick={scrollToKits} type="button">
+                  Ver Kits
+                </button>
+              </div>
+            </div>
+          </article>
         </section>
+
+        <section className="ea-catalog-section" id="catalogo">
+          <header className="ea-section-header">
+            <div className="container">
+              <h3 className="ea-subheading">Decants Mais vendidos</h3>
+              <div className="ea-tab-list" role="tablist">
+                {availableTabs.map((tab) => (
+                  <button
+                    aria-selected={activeTab === tab.key}
+                    className={activeTab === tab.key ? "ea-tab is-active" : "ea-tab"}
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    role="tab"
+                    type="button"
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="ea-search-row">
+                <input
+                  className="ea-search-input"
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Buscar perfume por nome ou marca"
+                  type="search"
+                  value={searchQuery}
+                />
+              </div>
+            </div>
+          </header>
+
+          <div className="container">
+            <div className="ea-product-track" role="list">
+              {visibleItems.map((item) => {
+                const compareAt = getCompareAt(item.price);
+                const discount = getDiscount(item.price);
+
+                return (
+                  <article className="ea-product-card" key={item.id} role="listitem">
+                    <Link className="ea-product-link" href={`/produtos/${item.id}`}>
+                      <div className="ea-product-image-wrap">
+                        <Image alt={item.name} className="ea-product-image" height={700} src={item.image} width={700} />
+                        <span className="ea-discount-badge">-{discount}%</span>
+                      </div>
+                    </Link>
+
+                    <div className="ea-product-info">
+                      <h2>
+                        <Link href={`/produtos/${item.id}`}>{item.name}</Link>
+                      </h2>
+
+                      <div className="ea-price-list">
+                        <span className="ea-price-current">{currency.format(item.price)}</span>
+                        <span className="ea-price-old">{currency.format(compareAt)}</span>
+                      </div>
+
+                      <div className="ea-pay-info">
+                        <div>
+                          Pix: <strong>{currency.format(getPixPrice(item.price))}</strong>
+                          <span> (-5%)</span>
+                        </div>
+                        <div>
+                          ou <strong>6x</strong> de <strong>{currency.format(getInstallment(item.price))}</strong> sem juros
+                        </div>
+                      </div>
+
+                      <div className="ea-card-actions">
+                        <Link className="secondary-btn" href={`/produtos/${item.id}`}>
+                          Ver produto
+                        </Link>
+                        <button className="primary-btn" onClick={() => handleQuickBuy(item)} type="button">
+                          Comprar
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            {visibleItems.length === 0 && (
+              <p className="ea-empty">Nenhum perfume encontrado para os filtros aplicados.</p>
+            )}
+          </div>
+        </section>
+
+        {kitItems.length > 0 && (
+          <section className="ea-kits-section" id="kits">
+            <div className="container">
+              <header className="ea-kits-header">
+                <h3>Kits e Presentes</h3>
+                <p>Selecoes prontas para presentear com assinatura Elite Aromas.</p>
+              </header>
+
+              <div className="ea-kits-grid">
+                {kitItems.map((item) => (
+                  <article className="ea-kit-card" key={item.id}>
+                    <Link href={`/produtos/${item.id}`}>
+                      <Image alt={item.name} height={520} src={item.image} width={520} />
+                      <div>
+                        <h4>{item.name}</h4>
+                        <strong>{currency.format(item.price)}</strong>
+                      </div>
+                    </Link>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {kitItems.length === 0 && (
+          <section className="ea-kits-section" id="kits">
+            <div className="container">
+              <header className="ea-kits-header">
+                <h3>Kits e Presentes</h3>
+                <p>Nenhum kit cadastrado no momento. Adicione novos itens no painel Admin.</p>
+              </header>
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

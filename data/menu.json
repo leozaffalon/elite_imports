@@ -1,1 +1,302 @@
-[]
+[
+  {
+    "id": "ea-ocean-velvet-100",
+    "name": "Ocean Velvet",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 319.9,
+    "image": "/images/official/discovery.png",
+    "images": [
+      "/images/official/discovery.png",
+      "/images/official/hero.png",
+      "/images/official/lavie.png"
+    ],
+    "category": "Masculino",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-citrus-royale-100",
+    "name": "Citrus Royale",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 279.9,
+    "image": "/images/official/goodgirl.png",
+    "images": [
+      "/images/official/goodgirl.png",
+      "/images/official/kit.png",
+      "/images/official/lightblue.png"
+    ],
+    "category": "Masculino",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-urban-smoke-100",
+    "name": "Urban Smoke",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 299.9,
+    "image": "/images/official/hero.png",
+    "images": [
+      "/images/official/hero.png",
+      "/images/official/lavie.png",
+      "/images/official/oudwood.png"
+    ],
+    "category": "Masculino",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-amber-code-100",
+    "name": "Amber Code",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 339.9,
+    "image": "/images/official/kit.png",
+    "images": [
+      "/images/official/kit.png",
+      "/images/official/lightblue.png",
+      "/images/official/sauvage.png"
+    ],
+    "category": "Masculino",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-luna-blush-90",
+    "name": "Luna Blush",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 289.9,
+    "image": "/images/official/lavie.png",
+    "images": [
+      "/images/official/lavie.png",
+      "/images/official/oudwood.png",
+      "/images/official/bleu.png"
+    ],
+    "category": "Feminino",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-rose-atelier-90",
+    "name": "Rose Atelier",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 309.9,
+    "image": "/images/official/lightblue.png",
+    "images": [
+      "/images/official/lightblue.png",
+      "/images/official/sauvage.png",
+      "/images/official/discovery.png"
+    ],
+    "category": "Feminino",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-golden-peony-90",
+    "name": "Golden Peony",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 329.9,
+    "image": "/images/official/oudwood.png",
+    "images": [
+      "/images/official/oudwood.png",
+      "/images/official/bleu.png",
+      "/images/official/goodgirl.png"
+    ],
+    "category": "Feminino",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-silk-vanilla-90",
+    "name": "Silk Vanilla",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 269.9,
+    "image": "/images/official/sauvage.png",
+    "images": [
+      "/images/official/sauvage.png",
+      "/images/official/discovery.png",
+      "/images/official/hero.png"
+    ],
+    "category": "Feminino",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-midnight-bloom-90",
+    "name": "Midnight Bloom",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 299.9,
+    "image": "/images/official/bleu.png",
+    "images": [
+      "/images/official/bleu.png",
+      "/images/official/goodgirl.png",
+      "/images/official/kit.png"
+    ],
+    "category": "Feminino",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-fresh-aura-100",
+    "name": "Fresh Aura",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 259.9,
+    "image": "/images/official/discovery.png",
+    "images": [
+      "/images/official/discovery.png",
+      "/images/official/hero.png",
+      "/images/official/lavie.png"
+    ],
+    "category": "Unissex",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-pure-mineral-100",
+    "name": "Pure Mineral",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 279.9,
+    "image": "/images/official/goodgirl.png",
+    "images": [
+      "/images/official/goodgirl.png",
+      "/images/official/kit.png",
+      "/images/official/lightblue.png"
+    ],
+    "category": "Unissex",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-white-sandal-100",
+    "name": "White Sandal",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 319.9,
+    "image": "/images/official/hero.png",
+    "images": [
+      "/images/official/hero.png",
+      "/images/official/lavie.png",
+      "/images/official/oudwood.png"
+    ],
+    "category": "Unissex",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-green-iris-100",
+    "name": "Green Iris",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 289.9,
+    "image": "/images/official/kit.png",
+    "images": [
+      "/images/official/kit.png",
+      "/images/official/lightblue.png",
+      "/images/official/sauvage.png"
+    ],
+    "category": "Unissex",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-cloud-amber-100",
+    "name": "Cloud Amber",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 309.9,
+    "image": "/images/official/lavie.png",
+    "images": [
+      "/images/official/lavie.png",
+      "/images/official/oudwood.png",
+      "/images/official/bleu.png"
+    ],
+    "category": "Unissex",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-duo-signature-kit",
+    "name": "Duo Signature Kit",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 419.9,
+    "image": "/images/official/lightblue.png",
+    "images": [
+      "/images/official/lightblue.png",
+      "/images/official/sauvage.png",
+      "/images/official/discovery.png"
+    ],
+    "category": "Kits",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-night-day-kit",
+    "name": "Night And Day Kit",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 449.9,
+    "image": "/images/official/oudwood.png",
+    "images": [
+      "/images/official/oudwood.png",
+      "/images/official/bleu.png",
+      "/images/official/goodgirl.png"
+    ],
+    "category": "Kits",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-premium-discovery-kit",
+    "name": "Premium Discovery Kit",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 389.9,
+    "image": "/images/official/sauvage.png",
+    "images": [
+      "/images/official/sauvage.png",
+      "/images/official/discovery.png",
+      "/images/official/hero.png"
+    ],
+    "category": "Kits",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-travel-icons-kit",
+    "name": "Travel Icons Kit",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 359.9,
+    "image": "/images/official/bleu.png",
+    "images": [
+      "/images/official/bleu.png",
+      "/images/official/goodgirl.png",
+      "/images/official/kit.png"
+    ],
+    "category": "Kits",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "ea-exclusive-select-kit",
+    "name": "Exclusive Select Kit",
+    "description": "Anuncio demonstrativo da Elite Aromas com perfil olfativo sofisticado e alta aceitacao. Produto para visualizacao do layout.",
+    "price": 499.9,
+    "image": "/images/official/discovery.png",
+    "images": [
+      "/images/official/discovery.png",
+      "/images/official/hero.png",
+      "/images/official/lavie.png"
+    ],
+    "category": "Kits",
+    "featured": false,
+    "available": true
+  },
+  {
+    "id": "00ed5c4e-a6fe-409c-b738-162e5d4af688",
+    "name": "Perfume Teste 1776125613330",
+    "description": "Teste CRUD completo apos ajuste de home images",
+    "price": 229.9,
+    "image": "/images/official/hero.png",
+    "images": [
+      "/images/official/hero.png",
+      "/images/official/hero.png?2",
+      "/images/official/hero.png?3"
+    ],
+    "category": "Masculino",
+    "featured": false,
+    "available": true
+  }
+]

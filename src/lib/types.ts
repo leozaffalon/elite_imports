@@ -34,3 +34,8 @@ export type Order = {
   total: number;
   status: "Recebido" | "Em preparo" | "Enviado" | "Entregue";
 };
+
+export type SiteSettings = {
+  homeImage: string;
+  homeImages: string[];
+};

@@ -2,17 +2,23 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { get as getBlob, put as putBlob } from "@vercel/blob";
-import { MenuItem, Order } from "@/lib/types";
+import { MenuItem, Order, SiteSettings } from "@/lib/types";
 
 const dataDir = path.join(process.cwd(), "data");
 const menuPath = path.join(dataDir, "menu.json");
 const ordersPath = path.join(dataDir, "orders.json");
+const settingsPath = path.join(dataDir, "settings.json");
 const blobMenuPath = "catalog/menu.json";
 const blobOrdersPath = "catalog/orders.json";
+const blobSettingsPath = "catalog/settings.json";
 const mutationRetryDelayMs = 500;
 const mutationMaxAttempts = 30;
 
 const initialMenu: MenuItem[] = [];
+const initialSettings: SiteSettings = {
+  homeImage: "/images/official/elite-aromas-ea-logo.svg",
+  homeImages: ["/images/official/elite-aromas-ea-logo.svg"]
+};
 
 const defaultImage = "/images/official/hero.png";
 
@@ -99,6 +105,12 @@ async function ensureDataFiles() {
   } catch {
     await writeFile(ordersPath, JSON.stringify([], null, 2));
   }
+
+  try {
+    await readFile(settingsPath, "utf-8");
+  } catch {
+    await writeFile(settingsPath, JSON.stringify(initialSettings, null, 2));
+  }
 }
 
 function isReadonlyWriteError(error: unknown) {
@@ -109,6 +121,7 @@ function isReadonlyWriteError(error: unknown) {
 function getBlobPathForFile(filePath: string) {
   if (filePath === menuPath) return blobMenuPath;
   if (filePath === ordersPath) return blobOrdersPath;
+  if (filePath === settingsPath) return blobSettingsPath;
   return null;
 }
 
@@ -119,6 +132,10 @@ function getBlobPublicUrl(blobPath: string) {
 
   if (blobPath === blobOrdersPath) {
     return process.env.BLOB_PUBLIC_ORDERS_URL;
+  }
+
+  if (blobPath === blobSettingsPath) {
+    return process.env.BLOB_PUBLIC_SETTINGS_URL;
   }
 
   return undefined;
@@ -319,4 +336,38 @@ export async function createOrder(payload: Omit<Order, "id" | "createdAt" | "sta
 
 export async function getOrders() {
   return readJsonFile<Order[]>(ordersPath, []);
+}
+
+function normalizeSiteSettings(value: Partial<SiteSettings> | null | undefined): SiteSettings {
+  const fromArray = Array.isArray(value?.homeImages)
+    ? value.homeImages.filter((item): item is string => typeof item === "string").map((item) => item.trim())
+    : [];
+
+  const fromSingle =
+    typeof value?.homeImage === "string" && value.homeImage.trim().length > 0 ? value.homeImage.trim() : "";
+
+  const merged = [...new Set([...fromArray, fromSingle].filter((item) => item.length > 0))].slice(0, 5);
+  const homeImages = merged.length > 0 ? merged : [...initialSettings.homeImages];
+  const homeImage = homeImages[0] ?? initialSettings.homeImage;
+
+  return {
+    homeImage,
+    homeImages
+  };
+}
+
+export async function getSiteSettings() {
+  const settings = await readJsonFile<SiteSettings>(settingsPath, initialSettings);
+  return normalizeSiteSettings(settings);
+}
+
+export async function updateSiteSettings(updates: Partial<SiteSettings>) {
+  const current = await getSiteSettings();
+  const merged = normalizeSiteSettings({
+    ...current,
+    ...updates
+  });
+
+  await writeJsonFile(settingsPath, merged);
+  return merged;
 }

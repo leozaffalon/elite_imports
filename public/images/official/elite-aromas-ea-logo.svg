@@ -1,0 +1,29 @@
+<svg width="1400" height="720" viewBox="0 0 1400 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="200" y1="60" x2="1220" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0C0C0C"/>
+      <stop offset="1" stop-color="#1A1A1A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(700 360) rotate(90) scale(300 420)">
+      <stop stop-color="#C9A86A" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#C9A86A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1400" height="720" fill="url(#bg)"/>
+  <rect width="1400" height="720" fill="url(#glow)"/>
+
+  <g opacity="0.35" stroke="#D8BE8C" stroke-width="1.6">
+    <circle cx="700" cy="360" r="245"/>
+    <circle cx="700" cy="360" r="205"/>
+  </g>
+
+  <g opacity="0.5" stroke="#9A7A45" stroke-width="1.2">
+    <line x1="220" y1="360" x2="500" y2="360"/>
+    <line x1="900" y1="360" x2="1180" y2="360"/>
+  </g>
+
+  <text x="700" y="402" text-anchor="middle" fill="#EAD9B8" font-family="Georgia, 'Times New Roman', serif" font-size="214" letter-spacing="28" font-weight="700">EA</text>
+
+  <text x="700" y="500" text-anchor="middle" fill="#D0B27D" font-family="Arial, Helvetica, sans-serif" font-size="34" letter-spacing="15" font-weight="600">ELITE AROMAS</text>
+</svg>
