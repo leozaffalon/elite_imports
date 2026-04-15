@@ -259,6 +259,57 @@ h6 a {
   background: radial-gradient(circle at 50% 40%, #fff5de 0%, #e8c985 100%);
 }
 
+.ea-slides-catalog {
+  margin: 1.5rem auto;
+  cursor: grab;
+}
+
+.ea-slides-catalog:active {
+  cursor: grabbing;
+}
+
+.ea-slide-catalog {
+  background: #faf8f3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+}
+
+.ea-slide-image-catalog {
+  object-fit: cover;
+  height: 280px;
+}
+
+.ea-catalog-nav-dots {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.ea-nav-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.ea-nav-dot:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.ea-nav-dot.active {
+  background: var(--gold);
+  transform: scale(1.2);
+}
+
 .ea-slide-overlay {
   position: absolute;
   left: 1rem;

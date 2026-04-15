@@ -47,9 +47,11 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenu);
   const [homeImages, setHomeImages] = useState<string[]>(sanitizeHomeImages(initialHomeImages));
   const [homeImageIndex, setHomeImageIndex] = useState(0);
+  const [catalogImageIndex, setCatalogImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<TabKey>("Masculino");
   const [searchQuery, setSearchQuery] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [dragStart, setDragStart] = useState(0);
   const { addToCart, getTotalItems } = useCart();
 
   const availableTabs = useMemo(() => {
@@ -108,6 +110,45 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
 
     return () => window.clearInterval(timer);
   }, [homeImages]);
+
+  useEffect(() => {
+    if (homeImages.length <= 1) {
+      setCatalogImageIndex(0);
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setCatalogImageIndex((current) => (current + 1) % homeImages.length);
+    }, 3200);
+
+    return () => window.clearInterval(timer);
+  }, [homeImages]);
+
+  function handleCatalogDragStart(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+    if ("touches" in e) {
+      setDragStart(e.touches[0].clientX);
+    } else {
+      setDragStart(e.clientX);
+    }
+  }
+
+  function handleCatalogDragEnd(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+    let dragEnd = 0;
+    if ("changedTouches" in e) {
+      dragEnd = e.changedTouches[0].clientX;
+    } else {
+      dragEnd = (e as React.MouseEvent<HTMLDivElement>).clientX;
+    }
+
+    const diff = dragStart - dragEnd;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        setCatalogImageIndex((current) => (current + 1) % homeImages.length);
+      } else {
+        setCatalogImageIndex((current) => (current - 1 + homeImages.length) % homeImages.length);
+      }
+    }
+  }
 
   const visibleItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -268,6 +309,40 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
               </div>
             </div>
           </header>
+
+          <section
+            className="container ea-slides ea-slides-catalog"
+            onMouseDown={handleCatalogDragStart}
+            onMouseUp={handleCatalogDragEnd}
+            onTouchStart={handleCatalogDragStart}
+            onTouchEnd={handleCatalogDragEnd}
+          >
+            <article className="ea-slide ea-slide-catalog reveal-up">
+              <div className="ea-slide-container" style={{ transform: `translateX(-${catalogImageIndex * 100}%)` }}>
+                {homeImages.map((image, index) => (
+                  <Image
+                    key={image}
+                    alt={`Anúncio ${index + 1}`}
+                    className="ea-slide-image ea-slide-image-catalog"
+                    height={400}
+                    priority={index === 0}
+                    src={image}
+                    width={1200}
+                  />
+                ))}
+              </div>
+              <div className="ea-catalog-nav-dots">
+                {homeImages.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`ea-nav-dot ${index === catalogImageIndex ? "active" : ""}`}
+                    onClick={() => setCatalogImageIndex(index)}
+                    aria-label={`Ir para anúncio ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </article>
+          </section>
 
           <div className="container">
             <div className="ea-product-track" role="list">
