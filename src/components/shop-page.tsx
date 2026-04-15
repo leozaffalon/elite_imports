@@ -123,7 +123,7 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
     return () => window.clearInterval(timer);
   }, [homeImages.length]);
 
-  function handleCatalogDragStart(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+  function handleCatalogDragStart(e: React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>) {
     if ("touches" in e) {
       setDragStart(e.touches[0].clientX);
     } else {
@@ -131,12 +131,12 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
     }
   }
 
-  function handleCatalogDragEnd(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+  function handleCatalogDragEnd(e: React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>) {
     let dragEnd = 0;
     if ("changedTouches" in e) {
       dragEnd = e.changedTouches[0].clientX;
     } else {
-      dragEnd = (e as React.MouseEvent<HTMLDivElement>).clientX;
+      dragEnd = e.clientX;
     }
 
     const diff = dragStart - dragEnd;
