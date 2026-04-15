@@ -21,7 +21,6 @@ const defaultHomeImage = "/images/official/elite-aromas-ea-logo.svg";
 
 const benefits = [
   { title: "Envio em 24h", subtitle: "Postagem rapida" },
-  { title: "5% OFF no Pix", subtitle: "Desconto automatico" },
   { title: "6x sem juros", subtitle: "No cartao" },
   { title: "Compra segura", subtitle: "Ambiente protegido" },
   { title: "Frete gratis", subtitle: "Acima de R$199,90" },
@@ -140,10 +139,6 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
     return Math.max(8, Math.round((1 - price / compareAt) * 100));
   }
 
-  function getPixPrice(price: number) {
-    return price * 0.95;
-  }
-
   function getInstallment(price: number) {
     return price / 6;
   }
@@ -155,7 +150,6 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
       `Produto: ${item.name}`,
       `Categoria: ${item.category}`,
       `Preco: ${currency.format(item.price)}`,
-      `Pix: ${currency.format(getPixPrice(item.price))}`,
       "",
       "Pode me enviar mais detalhes?"
     ].join("\n");
@@ -297,11 +291,7 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
 
                       <div className="ea-pay-info">
                         <div>
-                          Pix: <strong>{currency.format(getPixPrice(item.price))}</strong>
-                          <span> (-5%)</span>
-                        </div>
-                        <div>
-                          ou <strong>6x</strong> de <strong>{currency.format(getInstallment(item.price))}</strong> sem juros
+                          <strong>6x</strong> de <strong>{currency.format(getInstallment(item.price))}</strong> sem juros
                         </div>
                       </div>
 
