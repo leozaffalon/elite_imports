@@ -340,6 +340,28 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
           </section>
         )}
       </main>
+
+      <footer className="ea-footer">
+        <div className="container ea-footer-content">
+          <div className="ea-footer-section">
+            <h4>Siga-nos</h4>
+            <a href="https://instagram.com/elite.aromass" target="_blank" rel="noopener noreferrer" className="ea-footer-link">
+              📷 @elite.aromass
+            </a>
+          </div>
+          <div className="ea-footer-section">
+            <h4>Contato</h4>
+            <a href="https://wa.me/5519992572980" target="_blank" rel="noopener noreferrer" className="ea-footer-link">
+              📱 WhatsApp: (19) 99257-2980
+            </a>
+          </div>
+        </div>
+        <div className="ea-footer-bottom">
+          <div className="container">
+            <p>&copy; 2024 Elite Aromas. Todos os direitos reservados.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
