@@ -181,10 +181,17 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
       <header className="ea-header">
         <div className="container ea-header-inner">
           <div className="ea-brand-wrap">
-            <button aria-label="Abrir menu" className="ea-menu-btn" type="button">
-              <span />
-              <span />
-              <span />
+            <button
+              aria-label="Abrir menu"
+              className="ea-menu-btn"
+              type="button"
+              onClick={() => setIsCartOpen(true)}
+              title="Carrinho de Compras"
+            >
+              🛒
+              {getTotalItems() > 0 && (
+                <span className="ea-cart-count-menu">{getTotalItems()}</span>
+              )}
             </button>
 
             <Link className="ea-brand" href="/">
@@ -195,17 +202,6 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
           <nav className="ea-nav">
             <a href="#catalogo">Catalogo</a>
           </nav>
-
-          <button
-            className="ea-cart-btn"
-            onClick={() => setIsCartOpen(true)}
-            aria-label="Abrir carrinho"
-          >
-            🛒
-            {getTotalItems() > 0 && (
-              <span className="ea-cart-count">{getTotalItems()}</span>
-            )}
-          </button>
         </div>
       </header>
 

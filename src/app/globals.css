@@ -134,6 +134,14 @@ h6 a {
   align-content: center;
   gap: 3px;
   padding: 0 8px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ea-menu-btn:hover {
+  background: var(--gold-soft);
+  border-color: var(--gold);
 }
 
 .ea-menu-btn span {
@@ -1229,30 +1237,7 @@ select:focus {
 }
 
 /* Cart Styles */
-.ea-cart-btn {
-  position: relative;
-  background: var(--gold);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-left: 0.5rem;
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ea-cart-btn:hover {
-  background: var(--gold-dark);
-  transform: scale(1.05);
-}
-
-.ea-cart-count {
+.ea-cart-count-menu {
   position: absolute;
   top: -6px;
   right: -6px;
