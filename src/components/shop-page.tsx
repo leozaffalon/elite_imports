@@ -23,7 +23,6 @@ const defaultHomeImage = "/images/official/elite-aromas-ea-logo.svg";
 
 const benefits = [
   { title: "Envio em 24h", subtitle: "Postagem rapida" },
-  { title: "6x sem juros", subtitle: "No cartao" },
   { title: "Compra segura", subtitle: "Ambiente protegido" },
   { title: "Frete gratis", subtitle: "Acima de R$199,90" },
   { title: "Originais", subtitle: "100% autenticados" }
@@ -182,10 +181,6 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
   function getDiscount(price: number) {
     const compareAt = getCompareAt(price);
     return Math.max(8, Math.round((1 - price / compareAt) * 100));
-  }
-
-  function getInstallment(price: number) {
-    return price / 6;
   }
 
   function handleAddToCart(item: MenuItem) {
@@ -367,12 +362,6 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
                       <div className="ea-price-list">
                         <span className="ea-price-current">{currency.format(item.price)}</span>
                         <span className="ea-price-old">{currency.format(compareAt)}</span>
-                      </div>
-
-                      <div className="ea-pay-info">
-                        <div>
-                          <strong>6x</strong> de <strong>{currency.format(getInstallment(item.price))}</strong> sem juros
-                        </div>
                       </div>
 
                       <div className="ea-card-actions">
