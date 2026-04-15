@@ -1234,12 +1234,17 @@ select:focus {
   background: var(--gold);
   color: white;
   border: none;
-  border-radius: var(--radius);
-  padding: 0.75rem 1rem;
-  font-size: 1.25rem;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-left: 1rem;
+  margin-left: 0.5rem;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ea-cart-btn:hover {
@@ -1249,14 +1254,14 @@ select:focus {
 
 .ea-cart-count {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: -6px;
+  right: -6px;
   background: var(--bs-primary);
   color: white;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 0.75rem;
+  width: 18px;
+  height: 18px;
+  font-size: 0.65rem;
   font-weight: 600;
   display: flex;
   align-items: center;
