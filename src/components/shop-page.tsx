@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { MenuCategory, MenuItem } from "@/lib/types";
+import { useCart } from "@/contexts/cart-context";
+import Cart from "./cart";
 
 type ShopPageProps = {
   initialMenu: MenuItem[];
@@ -47,6 +49,8 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
   const [homeImageIndex, setHomeImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<TabKey>("Masculino");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { addToCart, getTotalItems } = useCart();
 
   const availableTabs = useMemo(() => {
     const hasMasculino = menuItems.some((item) => item.category === "Masculino");
@@ -143,6 +147,11 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
     return price / 6;
   }
 
+  function handleAddToCart(item: MenuItem) {
+    addToCart(item);
+    setIsCartOpen(true);
+  }
+
   function handleQuickBuy(item: MenuItem) {
     const message = [
       "Ola! Tenho interesse neste perfume da Elite Aromas:",
@@ -186,6 +195,17 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
           <nav className="ea-nav">
             <a href="#catalogo">Catalogo</a>
           </nav>
+
+          <button
+            className="ea-cart-btn"
+            onClick={() => setIsCartOpen(true)}
+            aria-label="Abrir carrinho"
+          >
+            🛒
+            {getTotalItems() > 0 && (
+              <span className="ea-cart-count">{getTotalItems()}</span>
+            )}
+          </button>
         </div>
       </header>
 
@@ -288,8 +308,8 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
                         <Link className="secondary-btn" href={`/produtos/${item.id}`}>
                           Ver produto
                         </Link>
-                        <button className="primary-btn" onClick={() => handleQuickBuy(item)} type="button">
-                          Comprar
+                        <button className="primary-btn" onClick={() => handleAddToCart(item)} type="button">
+                          Adicionar ao Carrinho
                         </button>
                       </div>
                     </div>
@@ -362,6 +382,8 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
           </div>
         </div>
       </footer>
+
+      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
 }
