@@ -219,9 +219,6 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
                 />
               ))}
             </div>
-            <div className="ea-slide-overlay">
-              <p>navegacao rapida</p>
-            </div>
           </article>
         </section>
 
