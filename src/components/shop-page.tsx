@@ -122,7 +122,7 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
     }, 3200);
 
     return () => window.clearInterval(timer);
-  }, [homeImages]);
+  }, [homeImages.length]);
 
   function handleCatalogDragStart(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
     if ("touches" in e) {
