@@ -284,6 +284,7 @@ h6 a {
   border: 1px solid var(--line-strong);
   color: var(--text);
   background: var(--gold-soft);
+  opacity: 0.85;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -294,11 +295,13 @@ h6 a {
   font-size: 0.62rem;
   font-weight: 700;
   text-decoration: none;
+  transition: opacity 0.3s ease;
 }
 
 .ea-white-btn:hover {
   background: var(--gold);
   color: #ffffff;
+  opacity: 1;
 }
 
 .ea-catalog-section {
