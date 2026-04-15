@@ -221,14 +221,6 @@ export default function ShopPage({ initialMenu, initialHomeImages }: ShopPagePro
             </div>
             <div className="ea-slide-overlay">
               <p>navegacao rapida</p>
-              <div className="ea-slide-actions">
-                <button className="ea-white-btn" onClick={scrollToCatalog} type="button">
-                  Conhecer Decants
-                </button>
-                <button className="ea-white-btn" onClick={scrollToKits} type="button">
-                  Ver Kits
-                </button>
-              </div>
             </div>
           </article>
         </section>
